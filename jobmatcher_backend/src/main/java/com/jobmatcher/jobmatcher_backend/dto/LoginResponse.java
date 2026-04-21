@@ -1,5 +1,6 @@
 package com.jobmatcher.jobmatcher_backend.dto;
 
+import com.jobmatcher.jobmatcher_backend.enums.RoleEnum;
 import lombok.*;
 
 @Data
@@ -9,5 +10,5 @@ public class LoginResponse {
     private String token;
     private String email;
     private String username;
-    private String role;
+    private RoleEnum role;
 }

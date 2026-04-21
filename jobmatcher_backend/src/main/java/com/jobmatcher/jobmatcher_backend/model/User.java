@@ -1,5 +1,6 @@
 package com.jobmatcher.jobmatcher_backend.model;
 
+import com.jobmatcher.jobmatcher_backend.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,5 +16,6 @@ public class User {
     private String password;
     @Column(unique = true)
     private String email;
-    private String role; // Role =  Candidate, Recruiter
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role; // Role =  Candidate, Recruiter
 }

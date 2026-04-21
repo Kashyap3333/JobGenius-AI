@@ -38,10 +38,12 @@ public class AuthController {
 
         try {
             String token = authService.login(loginRequest);
-            return ResponseEntity.ok(token);
+
+            return new ResponseEntity<>(token, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid credentials");
+
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+
         }
 
 
@@ -53,9 +55,10 @@ public class AuthController {
             LoginResponse response = authService.loginresponse(loginRequest);
             return ResponseEntity.ok(response);
 
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid credentials");
+
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
     }
 

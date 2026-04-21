@@ -65,7 +65,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 System.out.println("Token: " + token);
                 System.out.println("Email: " + email);
                 System.out.println("JWT Filter working...");
-
+                System.out.println("Authorities: " + userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 System.out.println("FINAL AUTH: " + SecurityContextHolder.getContext().getAuthentication());

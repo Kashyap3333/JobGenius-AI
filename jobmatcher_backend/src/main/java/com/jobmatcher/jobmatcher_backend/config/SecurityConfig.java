@@ -48,8 +48,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/user/**").authenticated()
-                        .requestMatchers("/candidate/**").hasAuthority("CANDIDATE")
-                        .requestMatchers("/recruiter/**").hasAuthority("RECRUITER")
+                        .requestMatchers("/recruiter/**").hasRole("RECRUITER")
+                        .requestMatchers("/candidate/**").hasRole("CANDIDATE")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
