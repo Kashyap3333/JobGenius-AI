@@ -1,15 +1,18 @@
 package com.jobmatcher.jobmatcher_backend.service;
 
 import com.jobmatcher.jobmatcher_backend.dto.JobRequest;
+import com.jobmatcher.jobmatcher_backend.dto.JobResponse;
 import com.jobmatcher.jobmatcher_backend.model.Job;
 import com.jobmatcher.jobmatcher_backend.model.User;
 import com.jobmatcher.jobmatcher_backend.repository.JobRepository;
 import com.jobmatcher.jobmatcher_backend.repository.SkillRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 
 @Service
 public class JobService {
@@ -23,6 +26,10 @@ public class JobService {
     @Autowired
     private UserRepository userRepository;
 
+    public List<JobResponse> getAllJobs() {
+        List<Job> jobs = jobRepository.findAll();
+        return jobs.stream().map(JobResponse::new).toList();
+    }
 
     public Job createJob(JobRequest jobRequest, String recruiterEmail) {
 
@@ -56,4 +63,49 @@ public class JobService {
 
         return jobRepository.save(job);
     }
+
+    public Job updateJob(Long jobId, @Valid JobRequest jobRequest, String recruiterEmail) {
+
+
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found with id: " + jobId));
+
+        if (!job.getCreatedBy().getEmail().equals(recruiterEmail)) {
+            throw new RuntimeException("Recruiter Unauthorized to update this job");
+        }
+
+        job.setTitle(jobRequest.getTitle());
+        job.setDescription(jobRequest.getDescription());
+        job.setLocation(jobRequest.getLocation());
+        job.setCompanyName(jobRequest.getCompanyName());
+        job.setExperienceRequired(jobRequest.getExperienceRequired());
+        job.setJobType(jobRequest.getJobType());
+        job.setWorkMode(jobRequest.getWorkMode());
+        job.setSalary(jobRequest.getSalary());
+        job.setLastDateToApply(jobRequest.getLastDateToApply());
+
+        if (jobRequest.getSkillIds() != null) {
+            job.setSkills(new HashSet<>(skillRepository.findAllById(jobRequest.getSkillIds())));
+        }
+
+        return jobRepository.save(job);
+
+    }
+
+    public void deleteJob(Long jobId, String recruiterEmail) {
+
+
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found with id: " + jobId));
+
+        if (!job.getCreatedBy().getEmail().equals(recruiterEmail)) {
+            throw new RuntimeException("Recruiter Unauthorized to delete this job");
+        }
+
+        jobRepository.delete(job);
+    }
+
+
 }

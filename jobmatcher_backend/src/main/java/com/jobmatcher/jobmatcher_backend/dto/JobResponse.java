@@ -1,11 +1,13 @@
 package com.jobmatcher.jobmatcher_backend.dto;
 
 import com.jobmatcher.jobmatcher_backend.model.Job;
+import com.jobmatcher.jobmatcher_backend.model.Skill;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -23,7 +25,9 @@ public class JobResponse {
 
     private LocalDate postedDate;
     private LocalDate lastDateToApply;
-    private Long recruiterId; // 👈 only this instead of full user
+    private Long recruiterId;
+
+    private List<String> skills;
 
     public JobResponse(Job job) {
         this.id = job.getId();
@@ -37,7 +41,11 @@ public class JobResponse {
         this.postedDate = job.getPostedDate();
         this.lastDateToApply = job.getLastDateToApply();
 
-        this.recruiterId = job.getCreatedBy().getId(); // 🔥 key
+        this.recruiterId = job.getCreatedBy().getId();
+
+        this.skills = job.getSkills() != null
+                ? job.getSkills().stream().map(Skill::getName).toList()
+                : List.of();
     }
 
 }

@@ -39,7 +39,7 @@ public class AuthController {
         try {
             String token = authService.login(loginRequest);
 
-            return new ResponseEntity<>(token, HttpStatus.OK);
+            return new ResponseEntity<>("SECRET KEY: " +token, HttpStatus.OK);
         } catch (Exception e) {
 
             return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);

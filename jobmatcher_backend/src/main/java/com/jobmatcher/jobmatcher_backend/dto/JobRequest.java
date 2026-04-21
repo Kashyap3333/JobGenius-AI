@@ -18,21 +18,31 @@ public class JobRequest {
 
     @NotBlank(message = "Title is required")
     private String title;
+
     private String description;
-    private JobType jobType;
-    private String location;
+
     @NotBlank(message = "Company name is required")
     private String companyName;
-    private String experienceRequired;
-    @Enumerated(EnumType.STRING)
+
+    @NotBlank(message = "Location is required")
+    private String location;
+
+    @NotNull(message = "Job type is required")
+    private JobType jobType;
+
+    @NotNull(message = "Work mode is required")
     private WorkMode workMode;
-    @Min(0)
+
+    @Min(value = 0, message = "Salary must be positive")
     private Integer salary;
-    private List<Long> skillIds;
-    @Future
-    @NotNull(message = "Last date to apply is required and must be in the future")
+
+    private String experienceRequired;
+
+    @NotNull(message = "Last date is required")
     private LocalDate lastDateToApply;
-    
+
+    private List<Long> skillIds;
+
 
 
 }

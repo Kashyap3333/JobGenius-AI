@@ -3,6 +3,7 @@ package com.jobmatcher.jobmatcher_backend.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -46,10 +47,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/user/**").authenticated()
-                        .requestMatchers("/recruiter/**").hasRole("RECRUITER")
-                        .requestMatchers("/candidate/**").hasRole("CANDIDATE")
+                        .requestMatchers(HttpMethod.GET, "/jobs").permitAll()
+
+                        // 🔐 Recruiter APIs
+                        .requestMatchers(HttpMethod.POST, "/jobs").hasRole("RECRUITER")
+                        .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("RECRUITER")
+                        .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("RECRUITER")
+
+                        // 🔐 Everything else
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
