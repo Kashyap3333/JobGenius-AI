@@ -4,6 +4,8 @@ import com.jobmatcher.jobmatcher_backend.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Set;
+
 @Entity
 @Data
 @Table(name = "users")
@@ -18,4 +20,12 @@ public class User {
     private String email;
     @Enumerated(EnumType.STRING)
     private RoleEnum role; // Role =  Candidate, Recruiter
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_skills",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    private Set<Skill> skills;
 }

@@ -30,7 +30,7 @@ public class SecurityConfig {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    // ✅ Authentication Provider
+    //  Authentication Provider
     @Bean
     public AuthenticationProvider authProvider() {
 
@@ -40,21 +40,23 @@ public class SecurityConfig {
         return provider;
     }
 
-    // ✅ Security Rules
+    //  Security Rules
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        //  ALLOW AUTH APIs (VERY IMPORTANT)
+                        .requestMatchers("/auth/**").permitAll()
+                        // ALLOW Public jobs
                         .requestMatchers(HttpMethod.GET, "/jobs").permitAll()
-
-                        // 🔐 Recruiter APIs
+                        //  Recruiter APIs
                         .requestMatchers(HttpMethod.POST, "/jobs").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("RECRUITER")
 
-                        // 🔐 Everything else
+                        //  Everything else
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
