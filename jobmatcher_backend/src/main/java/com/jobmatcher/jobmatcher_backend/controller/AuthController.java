@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -19,7 +21,7 @@ public class AuthController {
     AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {    
 
         User user = new User();
         user.setUsername(request.getUsername());
@@ -33,20 +35,20 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
 
         try {
             String token = authService.login(loginRequest);
 
-            return new ResponseEntity<>("SECRET KEY: " +token, HttpStatus.OK);
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "message", "Login successful"
+            ));
+
         } catch (Exception e) {
-
-            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
-
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid credentials"));
         }
-
-
     }
     @PostMapping("/loginresponse")
     public ResponseEntity<?> loginresponse(@RequestBody LoginRequest loginRequest) {
