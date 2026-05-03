@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* 🔥 Fix Chrome autofill background */
+/*  Fix Chrome autofill background */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -12,4 +12,10 @@ select:-webkit-autofill {
   -webkit-text-fill-color: #1f2937 !important; /* Tailwind text-gray-800 */
 
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* remove default calendar icon from date input */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
 }
