@@ -29,6 +29,7 @@ function TextField({
   name,
   placeholder,
   required,
+  disabled = false,
   type = "text",
   form,
   errors,
@@ -45,8 +46,10 @@ function TextField({
         value={form[name]}
         onChange={onChange}
         placeholder={placeholder}
-        className={`border rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all
-          ${errors[name] ? "border-red-400" : "border-gray-200"}`}
+        disabled={disabled}
+        className={`border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all
+          ${disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-200" : "bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100"}
+          ${!disabled && errors[name] ? "border-red-400" : "border-gray-200"}`}
       />
       {errors[name] && (
         <p className="text-red-500 text-xs mt-0.5">{errors[name]}</p>
@@ -345,6 +348,7 @@ export default function PostJobPage({
             name="title"
             placeholder="Enter job title"
             required
+            disabled={isEdit}
             form={form}
             errors={errors}
             onChange={handleChange}
@@ -363,6 +367,7 @@ export default function PostJobPage({
             name="location"
             placeholder="Enter location (e.g. Bangalore, India)"
             required
+            disabled={isEdit}
             form={form}
             errors={errors}
             onChange={handleChange}
