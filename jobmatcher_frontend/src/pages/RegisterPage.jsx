@@ -74,11 +74,11 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#EEF2FF] via-[#F8FAFF] to-[#F1F5FF] p-4 font-sans">
-      <div className="flex flex-col lg:flex-row w-full max-w-[1040px]  bg-white rounded-2xl lg:rounded-[32px] shadow-[0_20px_60px_rgba(37,99,235,0.12)] overflow-hidden lg:min-h-[620px]">
+    <div className=" min-h-screen flex items-center justify-center bg-gradient-to-br from-[#EEF2FF] via-[#F8FAFF] to-[#F1F5FF] p-4 font-sans">
+      <div className="flex flex-col lg:flex-row w-full max-w-[960px]  bg-white rounded-2xl lg:rounded-[32px] shadow-[0_20px_60px_rgba(37,99,235,0.12)] overflow-hidden lg:min-h-[540px]">
         {/* ── LEFT PANEL ──────────────────────────────────────── */}
         <div
-          className="flex lg:flex flex-col justify-between w-full lg:w-[44%] p-6 lg:p-10 relative overflow-hidden"
+          className="flex lg:flex flex-col justify-between w-full lg:w-[44%] p-5 lg:p-6 relative overflow-hidden"
           style={{
             background:
               "linear-gradient(150deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%)",
@@ -107,13 +107,13 @@ export default function Register() {
             <img
               src={logo}
               alt="JobGenius"
-              className="w-28 lg:w-48 object-contain drop-shadow-lg"
+              className="w-28 lg:w-36 object-contain drop-shadow-lg"
             />
           </div>
 
           {/* Hero text */}
           <div className="z-10">
-            <h2 className="text-white text-[20px] lg:text-[28px]font-bold leading-tight mb-4">
+            <h2 className="text-white text-[20px] lg:text-2xlfont-bold leading-tight mb-4">
               Start your smart
               <br />
               career journey
@@ -186,7 +186,7 @@ export default function Register() {
             </Link>
           </div>
 
-          <h1 className="text-[28px] font-semibold tracking-tight text-gray-900 mb-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-1">
             Create Your Account
           </h1>
           <p className="text-gray-500 text-sm mb-7">
@@ -208,7 +208,7 @@ export default function Register() {
             {/* Username only */}
             <div>
               <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[46px] lg:h-[48px] bg-white transition-all duration-200
+                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[40px] lg:h-[40px] bg-white transition-all duration-200
                       focus-within:scale-[1.01] focus-within:shadow-[0_4px_14px_rgba(37,99,235,0.15)]
                 ${
                   errors.username
@@ -237,7 +237,7 @@ export default function Register() {
             {/* Email */}
             <div>
               <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[48px] bg-white transition-all duration-200
+                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[40px] bg-white transition-all duration-200
                       focus-within:scale-[1.01] focus-within:shadow-[0_4px_14px_rgba(37,99,235,0.15)]
                 ${
                   errors.email
@@ -251,7 +251,7 @@ export default function Register() {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="Email Address"
+                  placeholder="Enter a Email"
                   disabled={loading}
                   className="flex-1 text-sm outline-none bg-transparent text-gray-800 placeholder-gray-400"
                 />
@@ -266,7 +266,7 @@ export default function Register() {
             {/* Password only (no confirm) */}
             <div>
               <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[46px] lg:h-[48px] bg-white transition-all duration-200
+                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[40px] lg:h-[40px] bg-white transition-all duration-200
                       focus-within:scale-[1.01] focus-within:shadow-[0_4px_14px_rgba(37,99,235,0.15)]
                 ${
                   errors.password
@@ -280,7 +280,7 @@ export default function Register() {
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  placeholder="Password"
+                  placeholder="Enter a Password"
                   disabled={loading}
                   className="flex-1 text-sm outline-none bg-transparent text-gray-800 placeholder-gray-400"
                 />
@@ -389,7 +389,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-[46px] lg:h-[48px] rounded-xl font-semibold text-sm text-white transition-all duration-200
+              className="w-full h-[40px] lg:h-[40px] rounded-xl font-semibold text-sm text-white transition-all duration-200
               bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500
               hover:shadow-[0_12px_35px_rgba(37,99,235,0.45)]
               shadow-[0_8px_25px_rgba(37,99,235,0.35)]
@@ -433,7 +433,7 @@ export default function Register() {
             {/* Google */}
             <button
               type="button"
-              className="w-full h-[46px] lg:h-[48px] border border-gray-200 rounded-xl flex items-center justify-center gap-3
+              className="w-full h-[40px] lg:h-[40px] border border-gray-200 rounded-xl flex items-center justify-center gap-3
                 text-sm font-medium text-gray-700 hover:bg-gray-50 active:scale-[0.99] transition-all"
             >
               <svg width="18" height="18" viewBox="0 0 48 48">

@@ -1,17 +1,25 @@
-// src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import Register from "../pages/RegisterPage";
-import ProtectedRoute from "./ProtectedRoute";
 import Login from "../pages/LoginPage";
+import RecruiterLayout from "../components/layout/RecruiterLayout";
+import RecruiterDashboard from "../pages/RecruiterDashboard";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/register" replace />} />
+      {/* Public */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-      {/* Protected — must be logged in */}
-      <Route element={<ProtectedRoute />}></Route>
+
+      {/* Recruiter — all pages share RecruiterLayout (Navbar) */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RecruiterLayout />}>
+          <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+          {/* /post-job and /manage-jobs routes to be added when pages are ready */}
+        </Route>
+      </Route>
     </Routes>
   );
 }

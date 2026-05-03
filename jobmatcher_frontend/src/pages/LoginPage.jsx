@@ -45,7 +45,13 @@ export default function Login() {
       });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data));
-      navigate(from, { replace: true });
+
+      const role = res.data.role;
+
+      navigate(
+        role === "RECRUITER" ? "/recruiter-dashboard" : "/candidate-dashboard",
+        { replace: true },
+      );
     } catch (err) {
       setServerError(
         err.response?.data?.message ||
@@ -60,14 +66,14 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#EEF2FF] p-4 font-sans">
       <div
-        className="flex flex-col lg:flex-row w-full max-w-[1040px] bg-white 
+        className="flex flex-col lg:flex-row w-full max-w-[920px] bg-white 
             rounded-2xl lg:rounded-[32px] 
             shadow-[0_20px_60px_rgba(37,99,235,0.12)] 
-            overflow-hidden lg:min-h-[620px]"
+            overflow-hidden lg:min-h-[560px]"
       >
         {/* ══════════════════ LEFT PANEL ══════════════════════ */}
         <div
-          className="lg:w-[48%] w-full flex flex-col p-8 lg:p-10 relative overflow-hidden"
+          className="lg:w-[48%] w-full flex flex-col p-6 lg:p-8 relative overflow-hidden"
           style={{
             background:
               "linear-gradient(145deg,#2563EB 0%,#4338CA 40%,#7C3AED 100%)",
@@ -223,7 +229,7 @@ export default function Login() {
             </div>
           )}
 
-          <h1 className="text-2xl sm:text-[28px] font-bold text-gray-900 mb-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
             Welcome Back
           </h1>
           <p className="text-gray-500 text-sm mb-8">
@@ -244,7 +250,7 @@ export default function Login() {
                 Email Address
               </label>
               <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[52px] bg-white transition-all
+                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[44px] bg-white transition-all
                 ${
                   errors.email
                     ? "border-red-400 ring-2 ring-red-100"
@@ -276,7 +282,7 @@ export default function Login() {
                 Password
               </label>
               <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[52px] bg-white transition-all
+                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[44px] bg-white transition-all
                 ${
                   errors.password
                     ? "border-red-400 ring-2 ring-red-100"
@@ -323,7 +329,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-[52px] rounded-xl font-semibold text-sm text-white transition-all duration-200
+              className="w-full h-[44px] rounded-xl font-semibold text-sm text-white transition-all duration-200
                 bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600
                 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed
                 flex items-center justify-center gap-2
@@ -369,7 +375,7 @@ export default function Login() {
             {/* Google button */}
             <button
               type="button"
-              className="w-full h-[52px] border border-gray-200 rounded-xl flex items-center justify-center gap-3
+              className="w-full h-[44px] border border-gray-200 rounded-xl flex items-center justify-center gap-3
                 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300
                 active:scale-[0.99] transition-all duration-200"
             >
