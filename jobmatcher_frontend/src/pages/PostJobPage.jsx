@@ -19,15 +19,6 @@ import {
 } from "lucide-react";
 import API from "../services/api";
 
-const JOB_TYPES = [
-  "FULL_TIME",
-  "PART_TIME",
-  "CONTRACT",
-  "INTERNSHIP",
-  "FREELANCE",
-];
-const WORK_MODES = ["REMOTE", "OFFICE", "HYBRID"];
-
 function TextField({
   label,
   name,
@@ -161,6 +152,10 @@ export default function PostJobPage() {
     description: "",
   });
 
+  // ── Enum state ──────────────────────────────────────────────
+  const [jobTypes, setJobTypes] = useState([]);
+  const [workModes, setWorkModes] = useState([]);
+
   // ── Skills state ────────────────────────────────────────────
   const [allSkills, setAllSkills] = useState([]); // from API
   const [skillsLoading, setSkillsLoading] = useState(true);
@@ -176,6 +171,12 @@ export default function PostJobPage() {
 
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
+
+  // ── Fetch enums ─────────────────────────────────────────────
+  useEffect(() => {
+    API.get("/enums/job-types").then((res) => setJobTypes(res.data));
+    API.get("/enums/work-modes").then((res) => setWorkModes(res.data));
+  }, []);
 
   // ── Fetch skills from GET /skills ───────────────────────────
   useEffect(() => {
@@ -239,7 +240,7 @@ export default function PostJobPage() {
     if (!form.workMode) err.workMode = "Work mode is required";
     if (!form.salary) err.salary = "Salary is required";
     if (!form.lastDateToApply) err.lastDateToApply = "Last date is required";
-if (selectedSkills.length === 0) err.skills = "Select at least one skill";
+    if (selectedSkills.length === 0) err.skills = "Select at least one skill";
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -340,7 +341,7 @@ if (selectedSkills.length === 0) err.skills = "Select at least one skill";
           <SelectField
             label="Job Type"
             name="jobType"
-            options={JOB_TYPES}
+            options={jobTypes}
             required
             form={form}
             errors={errors}
@@ -349,7 +350,7 @@ if (selectedSkills.length === 0) err.skills = "Select at least one skill";
           <SelectField
             label="Work Mode"
             name="workMode"
-            options={WORK_MODES}
+            options={workModes}
             required
             form={form}
             errors={errors}
