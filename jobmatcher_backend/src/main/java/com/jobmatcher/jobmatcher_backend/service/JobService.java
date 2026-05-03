@@ -31,6 +31,12 @@ public class JobService {
         return jobs.stream().map(JobResponse::new).toList();
     }
 
+    public JobResponse getJobById(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found with id: " + jobId));
+        return new JobResponse(job);
+    }
+
     public Job createJob(JobRequest jobRequest, String recruiterEmail) {
 
         User recruiter = userRepository.findByEmail(recruiterEmail)

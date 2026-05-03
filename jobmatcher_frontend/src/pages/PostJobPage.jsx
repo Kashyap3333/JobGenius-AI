@@ -16,8 +16,13 @@ import {
   AlignLeft,
   Link as LinkIcon,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import API from "../services/api";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reusable sub-components
+// ─────────────────────────────────────────────────────────────────────────────
 
 function TextField({
   label,
@@ -64,9 +69,7 @@ function SelectField({
 
   useEffect(() => {
     const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setOpen(false);
-      }
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -75,40 +78,29 @@ function SelectField({
   const selected = options.find((o) => o === form[name]);
 
   return (
-    <div ref={ref} className=" flex flex-col gap-1.5 relative">
+    <div ref={ref} className="flex flex-col gap-1.5 relative">
       <label className="text-sm font-medium text-gray-700">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
 
-      {/* Trigger */}
       <div
         onClick={() => setOpen(!open)}
         className={`w-full flex items-center justify-between border rounded-xl px-4 py-2.5 text-sm bg-white cursor-pointer transition-all
-        ${
-          open
-            ? "border-blue-500 ring-2 ring-blue-100"
-            : errors[name]
-              ? "border-red-400"
-              : "border-gray-200 hover:border-gray-300"
-        }`}
+          ${open ? "border-blue-500 ring-2 ring-blue-100" : errors[name] ? "border-red-400" : "border-gray-200 hover:border-gray-300"}`}
       >
         <span className={selected ? "text-gray-800" : "text-gray-400"}>
           {selected
             ? selected.replace("_", " ")
             : `Select ${label.toLowerCase()}`}
         </span>
-
         <ChevronDown
           size={16}
-          className={`text-gray-400 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </div>
 
-      {/* Dropdown */}
       {open && (
-        <div className="mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-52 overflow-y-auto">
+        <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-sm max-h-52 overflow-y-auto z-20">
           {options.map((o) => (
             <div
               key={o}
@@ -117,11 +109,7 @@ function SelectField({
                 setOpen(false);
               }}
               className={`px-4 py-2.5 text-sm cursor-pointer transition-all
-              ${
-                form[name] === o
-                  ? "bg-blue-50 text-blue-600 font-medium"
-                  : "hover:bg-gray-50 text-gray-700"
-              }`}
+                ${form[name] === o ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
             >
               {o.replace("_", " ")}
             </div>
@@ -136,35 +124,54 @@ function SelectField({
   );
 }
 
-export default function PostJobPage() {
+// ─────────────────────────────────────────────────────────────────────────────
+// Default empty form
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EMPTY_FORM = {
+  title: "",
+  companyName: "",
+  location: "",
+  jobType: "",
+  workMode: "",
+  salary: "",
+  experienceRequired: "",
+  lastDateToApply: "",
+  description: "",
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PostJobPage — supports both "Post" (default) and "Edit" (isEdit=true) modes
+//
+// Props (all optional; only used in edit mode):
+//   isEdit      {boolean}  — enables edit mode UI & PUT request
+//   jobId       {string}   — the job's ID for PUT /job/:id
+//   initialData {object}   — prefilled form values + requiredSkills:[{id,name}]
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function PostJobPage({
+  isEdit = false,
+  jobId = null,
+  initialData = null,
+}) {
   const navigate = useNavigate();
 
   // ── Form state ──────────────────────────────────────────────
-  const [form, setForm] = useState({
-    title: "",
-    companyName: "",
-    location: "",
-    jobType: "",
-    workMode: "",
-    salary: "",
-    experienceRequired: "",
-    lastDateToApply: "",
-    description: "",
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
 
   // ── Enum state ──────────────────────────────────────────────
   const [jobTypes, setJobTypes] = useState([]);
   const [workModes, setWorkModes] = useState([]);
 
   // ── Skills state ────────────────────────────────────────────
-  const [allSkills, setAllSkills] = useState([]); // from API
+  const [allSkills, setAllSkills] = useState([]);
   const [skillsLoading, setSkillsLoading] = useState(true);
   const [skillsError, setSkillsError] = useState("");
-  const [selectedSkills, setSelectedSkills] = useState([]); // [{id, name}]
+  const [selectedSkills, setSelectedSkills] = useState([]);
   const [skillSearch, setSkillSearch] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // ── Form state ──────────────────────────────────────────────
+  // ── UI state ────────────────────────────────────────────────
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -172,17 +179,25 @@ export default function PostJobPage() {
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
 
+  // ── Prefill form when initialData arrives (edit mode) ───────
+  useEffect(() => {
+    if (isEdit && initialData) {
+      const { requiredSkills, ...formFields } = initialData;
+      setForm((prev) => ({ ...prev, ...formFields }));
+      if (Array.isArray(requiredSkills)) setSelectedSkills(requiredSkills);
+    }
+  }, [isEdit, initialData]);
+
   // ── Fetch enums ─────────────────────────────────────────────
   useEffect(() => {
     API.get("/enums/job-types").then((res) => setJobTypes(res.data));
     API.get("/enums/work-modes").then((res) => setWorkModes(res.data));
   }, []);
 
-  // ── Fetch skills from GET /skills ───────────────────────────
+  // ── Fetch all skills ─────────────────────────────────────────
   useEffect(() => {
     API.get("/skills")
       .then((res) => {
-        // API may return [{id, name}] or [string]
         const data = res.data || [];
         const normalized = data.map((s) =>
           typeof s === "string"
@@ -195,7 +210,7 @@ export default function PostJobPage() {
       .finally(() => setSkillsLoading(false));
   }, []);
 
-  // ── Close dropdown on outside click ────────────────────────
+  // ── Close skill dropdown on outside click ───────────────────
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target))
@@ -205,7 +220,7 @@ export default function PostJobPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── Field change handler ────────────────────────────────────
+  // ── Field change handler ─────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
@@ -213,8 +228,9 @@ export default function PostJobPage() {
     if (serverError) setServerError("");
   };
 
-  // ── Skill toggle ────────────────────────────────────────────
+  // ── Skill helpers ────────────────────────────────────────────
   const isSelected = (skill) => selectedSkills.some((s) => s.id === skill.id);
+
   const toggleSkill = (skill) => {
     setSelectedSkills((prev) =>
       isSelected(skill)
@@ -223,6 +239,7 @@ export default function PostJobPage() {
     );
     if (errors.skills) setErrors((p) => ({ ...p, skills: "" }));
   };
+
   const removeSkill = (skill) =>
     setSelectedSkills((prev) => prev.filter((s) => s.id !== skill.id));
 
@@ -230,7 +247,7 @@ export default function PostJobPage() {
     s.name?.toLowerCase().includes(skillSearch.toLowerCase()),
   );
 
-  // ── Validation ──────────────────────────────────────────────
+  // ── Validation ───────────────────────────────────────────────
   const validate = () => {
     const err = {};
     if (!form.title.trim()) err.title = "Job title is required";
@@ -245,40 +262,56 @@ export default function PostJobPage() {
     return Object.keys(err).length === 0;
   };
 
-  // ── Submit POST /jobs ───────────────────────────────────────
+  // ── Submit ───────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
+
+    const payload = {
+      ...form,
+      salary: Number(form.salary),
+      requiredSkills: selectedSkills.map((s) => s.name),
+    };
+
     try {
-      await API.post("/jobs", {
-        ...form,
-        salary: Number(form.salary),
-        requiredSkills: selectedSkills.map((s) => s.name), // send names or ids
-      });
+      if (isEdit) {
+        // PUT /job/:id  (note: matches your spec endpoint)
+        await API.put(`/jobs/${jobId}`, payload);
+      } else {
+        // POST /jobs
+        await API.post("/jobs", payload);
+      }
       navigate("/recruiter-dashboard");
     } catch (err) {
       setServerError(
         err.response?.data?.message ||
           err.response?.data ||
-          "Failed to post job. Please try again.",
+          `Failed to ${isEdit ? "update" : "post"} job. Please try again.`,
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────
+  // ── Page copy based on mode ───────────────────────────────────
+  const pageTitle = isEdit ? "Edit Job" : "Post a New Job";
+  const pageSubtitle = isEdit
+    ? "Update the details below to modify this job posting."
+    : "Fill in the details below to create a new job posting.";
+  const breadcrumbLabel = isEdit ? "Edit Job" : "Post Job";
+  const submitLabel = isEdit ? "Update Job" : "Publish Job";
+  const submittingLabel = isEdit ? "Updating..." : "Publishing...";
+
+  // ── Render ───────────────────────────────────────────────────
   return (
     <div className="w-full px-3 sm:px-4 lg:px-6 xl:px-13 py-6 sm:py-8">
       {/* ── Page header + breadcrumb ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Post a New Job
+            {pageTitle}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Fill in the details below to create a new job posting.
-          </p>
+          <p className="text-gray-500 text-sm mt-1">{pageSubtitle}</p>
         </div>
         <div className="flex items-center gap-2 text-sm shrink-0">
           <Link
@@ -288,7 +321,7 @@ export default function PostJobPage() {
             Dashboard
           </Link>
           <span className="text-gray-400">/</span>
-          <span className="text-gray-700 font-medium">Post Job</span>
+          <span className="text-gray-700 font-medium">{breadcrumbLabel}</span>
         </div>
       </div>
 
@@ -389,12 +422,10 @@ export default function PostJobPage() {
           />
 
           {/* Last Date to Apply */}
-
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">
               Last Date to Apply <span className="text-red-500">*</span>
             </label>
-
             <div className="relative group">
               <input
                 ref={inputRef}
@@ -403,20 +434,16 @@ export default function PostJobPage() {
                 value={form.lastDateToApply}
                 onChange={handleChange}
                 className={`w-full border rounded-xl px-4 pr-10 py-2.5 text-sm bg-white 
-      focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 
-      transition-all appearance-none
-      ${errors.lastDateToApply ? "border-red-400" : "border-gray-200"}`}
+                  focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 
+                  transition-all appearance-none
+                  ${errors.lastDateToApply ? "border-red-400" : "border-gray-200"}`}
               />
-
-              {/* CLICKABLE ICON */}
               <CalendarDays
                 size={18}
                 onClick={() => inputRef.current?.showPicker()}
-                className="absolute right-3 top-1/2 -translate-y-1/2
-      text-gray-400 cursor-pointer hover:scale-110 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer hover:scale-110 transition"
               />
             </div>
-
             {errors.lastDateToApply && (
               <p className="text-red-500 text-xs mt-0.5">
                 {errors.lastDateToApply}
@@ -477,15 +504,8 @@ export default function PostJobPage() {
             <div
               onClick={() => !skillsLoading && setDropdownOpen(true)}
               className={`min-h-[46px] border rounded-xl px-3 py-2 flex flex-wrap gap-1.5 items-center cursor-text transition-all
-                ${
-                  dropdownOpen
-                    ? "border-blue-500 ring-2 ring-blue-100"
-                    : errors.skills
-                      ? "border-red-400"
-                      : "border-gray-200"
-                }`}
+                ${dropdownOpen ? "border-blue-500 ring-2 ring-blue-100" : errors.skills ? "border-red-400" : "border-gray-200"}`}
             >
-              {/* Selected tags */}
               {selectedSkills.map((skill) => (
                 <span
                   key={skill.id}
@@ -634,12 +654,12 @@ export default function PostJobPage() {
             {loading ? (
               <>
                 <Loader2 size={15} className="animate-spin" />
-                Publishing...
+                {submittingLabel}
               </>
             ) : (
               <>
-                <Send size={15} />
-                Publish Job
+                {isEdit ? <Pencil size={15} /> : <Send size={15} />}
+                {submitLabel}
               </>
             )}
           </button>

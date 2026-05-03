@@ -5,6 +5,7 @@ import RecruiterLayout from "../components/layout/RecruiterLayout";
 import RecruiterDashboard from "../pages/RecruiterDashboard";
 import PostJobPage from "../pages/PostJobPage";
 import ProtectedRoute from "./ProtectedRoute";
+import EditJobPage from "../pages/EditJobPage";
 
 export default function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function AppRoutes() {
         <Route element={<RecruiterLayout />}>
           <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
           <Route path="/post-job" element={<PostJobPage />} />
+          <Route path="/edit-job/:id" element={<EditJobPage />} />
         </Route>
       </Route>
     </Routes>

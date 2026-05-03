@@ -57,6 +57,7 @@ public class SecurityConfig {
                         // ALLOW Public jobs
                         .requestMatchers(HttpMethod.GET, "/jobs").permitAll()
                         //  Recruiter APIs
+                        .requestMatchers(HttpMethod.GET, "/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.POST, "/jobs").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("RECRUITER")
@@ -77,7 +78,7 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // ✅ your frontend
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Pencil,
   Trash2,
-  Eye,
   Search,
   X,
 } from "lucide-react";
@@ -84,7 +83,7 @@ function ActionMenu({ jobId, onDelete }) {
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-8 w-40 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-20">
             <Link
-              to={`/manage-jobs/${jobId}/edit`}
+              to={`/edit-job/${jobId}`}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             >
