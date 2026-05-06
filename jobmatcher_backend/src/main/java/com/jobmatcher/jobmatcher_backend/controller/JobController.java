@@ -26,7 +26,6 @@ public class JobController {
         return new ResponseEntity<>(jobService.getAllJobs(), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('RECRUITER')")
     @GetMapping("/{jobId}")
     public ResponseEntity<JobResponse> getJobById(@PathVariable Long jobId) {
         return new ResponseEntity<>(jobService.getJobById(jobId), HttpStatus.OK);

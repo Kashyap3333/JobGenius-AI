@@ -28,6 +28,7 @@ import {
   Monitor,
   CalendarDays,
   RefreshCw,
+  CheckCircle2,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -43,12 +44,34 @@ function timeAgo(date) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-// Normalise requiredSkills — backend returns [{id,name}] or [string]
 function getSkillNames(job) {
   const raw = job.requiredSkills || job.skills || [];
   return raw
     .map((s) => (typeof s === "string" ? s : s?.name || s?.skillName || ""))
     .filter(Boolean);
+}
+
+function fmtSalary(s) {
+  if (s == null) return null;
+  const yearly = s * 12;
+  const yearlyFmt =
+    yearly >= 100000
+      ? `₹${(yearly / 100000).toFixed(1).replace(/\.0$/, "")}L/year`
+      : `₹${yearly.toLocaleString("en-IN")}/year`;
+  return `₹${s.toLocaleString("en-IN")}/month • ${yearlyFmt}`;
+}
+
+function fmtDate(d) {
+  if (!d) return null;
+  try {
+    return new Date(d).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return d;
+  }
 }
 
 const JOB_TYPE_STYLE = {
@@ -66,12 +89,16 @@ function JTypeBadge({ value }) {
   return (
     <span
       style={{ backgroundColor: color.bg, color: color.text }}
-      className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap"
+      className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0"
     >
       {value?.replace(/_/g, " ")}
     </span>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Match Ring
+// ─────────────────────────────────────────────────────────────────────────────
 
 function MatchRing({ pct = 0 }) {
   const r = 28;
@@ -111,150 +138,14 @@ function MatchRing({ pct = 0 }) {
     </div>
   );
 }
-function JobTypeDropdownUI({ value, onChange, options = [] }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative w-full pl-0">
-      <div
-        onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between border rounded-xl pl-9 pr-3 py-2.5 text-sm bg-white transition-all
-${open ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-200 hover:border-gray-300"}`}
-      >
-        <span className={value ? "text-gray-800" : "text-gray-400"}>
-          {value ? value.replace(/_/g, " ") : "Job Types"}
-        </span>
-
-        <ChevronDown
-          size={15}
-          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </div>
-
-      {open && (
-        <div className="absolute left-0 top-[110%] w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-          <div
-            onClick={() => {
-              onChange("");
-              setOpen(false);
-            }}
-            className={`px-4 py-2.5 text-sm cursor-pointer
-            ${value === "" ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
-          >
-            Job Types
-          </div>
-
-          {options.map((t) => (
-            <div
-              key={t}
-              onClick={() => {
-                onChange(t);
-                setOpen(false);
-              }}
-              className={`px-4 py-2.5 text-sm cursor-pointer transition-all
-              ${value === t ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
-            >
-              {t.replace(/_/g, " ")}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-function SkillChip({ name }) {
-  return (
-    <span className="px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full whitespace-nowrap">
-      {name}
-    </span>
-  );
-}
-
-function FilterCheckbox({ label, checked, onChange }) {
-  return (
-    <label className="flex items-center gap-2 cursor-pointer group">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
-      />
-      <span
-        className={`text-sm transition-colors ${checked ? "text-blue-600 font-medium" : "text-gray-600 group-hover:text-gray-900"}`}
-      >
-        {label}
-      </span>
-    </label>
-  );
-}
-
-function QuickLinkCard({ icon: Icon, color, title, subtitle, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group text-left"
-    >
-      <div
-        className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-        style={{ backgroundColor: color.bg }}
-      >
-        <Icon size={17} style={{ color: color.icon }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 leading-tight">
-          {title}
-        </p>
-        <p className="text-xs text-gray-400 mt-0.5 leading-tight">{subtitle}</p>
-      </div>
-      <ArrowRight
-        size={14}
-        className="text-gray-300 group-hover:text-blue-500 transition-colors shrink-0"
-      />
-    </button>
-  );
-}
-
-const APP_STATUS_STYLE = {
-  Applied: { bg: "#EFF6FF", text: "#1D4ED8" },
-  Interview: { bg: "#F0FDF4", text: "#15803D" },
-  Screening: { bg: "#FFF7ED", text: "#C2410C" },
-  Rejected: { bg: "#FFF1F2", text: "#BE123C" },
-};
-
-function AppStatusBadge({ status }) {
-  const s = APP_STATUS_STYLE[status] || { bg: "#F3F4F6", text: "#374151" };
-  return (
-    <span
-      style={{ backgroundColor: s.bg, color: s.text }}
-      className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
-    >
-      {status}
-    </span>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Dropdowns
+// Job Type Dropdown (hero search bar)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SortDropdown({ value, onChange }) {
+function JobTypeDropdown({ value, onChange, options = [] }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const opts = [
-    "Most Relevant",
-    "Newest First",
-    "Highest Salary",
-    "Best Match",
-  ];
 
   useEffect(() => {
     const h = (e) => {
@@ -265,34 +156,74 @@ function SortDropdown({ value, onChange }) {
   }, []);
 
   return (
-    <div ref={ref} className="relative">
-      <button
+    <div ref={ref} className="relative w-full">
+      <Briefcase
+        size={14}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
+      />
+      <div
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all font-medium text-gray-700"
+        className={`w-full flex items-center justify-between gap-2 border rounded-xl pl-9 pr-3 py-2.5 text-sm bg-white cursor-pointer select-none transition-all
+          ${open ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-200 hover:border-gray-300"}`}
       >
-        {value}
+        <span
+          className={`truncate ${value ? "text-gray-800" : "text-gray-400"}`}
+        >
+          {value ? value.replace(/_/g, " ") : "Job Types"}
+        </span>
         <ChevronDown
-          size={13}
-          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+          size={14}
+          className={`text-gray-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
         />
-      </button>
+      </div>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
-          {opts.map((o) => (
+        <div className="absolute left-0 top-[calc(100%+4px)] w-full min-w-[160px] bg-white border border-gray-200 rounded-xl shadow-xl z-[200] overflow-hidden">
+          <div
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+            }}
+            className={`px-4 py-2.5 text-sm cursor-pointer ${!value ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
+          >
+            All Types
+          </div>
+          {options.map((t) => (
             <div
-              key={o}
+              key={t}
               onClick={() => {
-                onChange(o);
+                onChange(t);
                 setOpen(false);
               }}
-              className={`px-4 py-2.5 text-sm cursor-pointer ${value === o ? "bg-blue-50 text-blue-600 font-semibold" : "hover:bg-gray-50 text-gray-700"}`}
+              className={`px-4 py-2.5 text-sm cursor-pointer ${value === t ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
             >
-              {o}
+              {t.replace(/_/g, " ")}
             </div>
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sidebar helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function FilterCheckbox({ label, checked, onChange }) {
+  return (
+    <label className="flex items-center gap-2 cursor-pointer group">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="w-4 h-4 rounded accent-blue-600 cursor-pointer shrink-0"
+      />
+      <span
+        className={`text-sm leading-tight transition-colors ${checked ? "text-blue-600 font-medium" : "text-gray-600 group-hover:text-gray-900"}`}
+      >
+        {label}
+      </span>
+    </label>
   );
 }
 
@@ -327,7 +258,7 @@ function SalaryDropdown({ value, onChange }) {
         </span>
         <ChevronDown
           size={13}
-          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-gray-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && (
@@ -350,46 +281,135 @@ function SalaryDropdown({ value, onChange }) {
   );
 }
 
+function SortDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const opts = [
+    "Most Relevant",
+    "Newest First",
+    "Highest Salary",
+    "Best Match",
+  ];
+
+  useEffect(() => {
+    const h = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all font-medium text-gray-700 whitespace-nowrap"
+      >
+        {value}
+        <ChevronDown
+          size={13}
+          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
+          {opts.map((o) => (
+            <div
+              key={o}
+              onClick={() => {
+                onChange(o);
+                setOpen(false);
+              }}
+              className={`px-4 py-2.5 text-sm cursor-pointer ${value === o ? "bg-blue-50 text-blue-600 font-semibold" : "hover:bg-gray-50 text-gray-700"}`}
+            >
+              {o}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SkillChip({ name }) {
+  return (
+    <span className="px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full whitespace-nowrap">
+      {name}
+    </span>
+  );
+}
+
+function QuickLinkCard({ icon: Icon, color, title, subtitle, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group text-left"
+    >
+      <div
+        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+        style={{ backgroundColor: color.bg }}
+      >
+        <Icon size={15} style={{ color: color.icon }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-gray-900 leading-tight">
+          {title}
+        </p>
+        <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">
+          {subtitle}
+        </p>
+      </div>
+      <ArrowRight
+        size={12}
+        className="text-gray-300 group-hover:text-blue-500 transition-colors shrink-0"
+      />
+    </button>
+  );
+}
+
+const APP_STATUS_STYLE = {
+  Applied: { bg: "#EFF6FF", text: "#1D4ED8" },
+  Interview: { bg: "#F0FDF4", text: "#15803D" },
+  Screening: { bg: "#FFF7ED", text: "#C2410C" },
+  Rejected: { bg: "#FFF1F2", text: "#BE123C" },
+};
+
+function AppStatusBadge({ status }) {
+  const s = APP_STATUS_STYLE[status] || { bg: "#F3F4F6", text: "#374151" };
+  return (
+    <span
+      style={{ backgroundColor: s.bg, color: s.text }}
+      className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
+    >
+      {status}
+    </span>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Job Card
 // ─────────────────────────────────────────────────────────────────────────────
 
-function JobCard({ job, matchPct, saved, onSave, onApply }) {
+function JobCard({
+  job,
+  matchPct,
+  saved,
+  onSave,
+  onApply,
+  applied,
+  isCandidate,
+}) {
   const skillNames = getSkillNames(job);
   const shown = skillNames.slice(0, 4);
   const extra = skillNames.length - shown.length;
-
-  const fmtSalary = (s) => {
-    if (s == null) return null;
-
-    const yearly = s * 12;
-
-    const yearlyFormatted =
-      yearly >= 100000
-        ? `₹${(yearly / 100000).toFixed(1).replace(/\.0$/, "")}L/year`
-        : `₹${yearly.toLocaleString("en-IN")}/year`;
-
-    return `₹${s.toLocaleString("en-IN")}/month • ${yearlyFormatted}`;
-  };
-
-  const fmtDate = (d) => {
-    if (!d) return null;
-    try {
-      return new Date(d).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return d;
-    }
-  };
+  const matchColor =
+    matchPct >= 85 ? "#16a34a" : matchPct >= 70 ? "#2563eb" : "#f59e0b";
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-3 sm:p-4 hover:border-blue-300 hover:shadow-md transition-all group">
-      <div className="flex items-start gap-4">
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-md transition-all group">
+      <div className="flex items-start gap-3">
         {/* Logo */}
-        <div className="w-12 h-12 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="w-11 h-11 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
           {job.companyLogo ? (
             <img
               src={job.companyLogo}
@@ -397,88 +417,87 @@ function JobCard({ job, matchPct, saved, onSave, onApply }) {
               className="w-full h-full object-contain p-1"
             />
           ) : (
-            <span className="text-lg font-bold text-gray-400">
+            <span className="text-base font-bold text-gray-300">
               {(job.companyName || "?")[0].toUpperCase()}
             </span>
           )}
         </div>
 
-        {/* Main */}
+        {/* Content */}
         <div className="flex-1 min-w-0">
+          {/* Top row: title + bookmark */}
           <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                   {job.title}
                 </h3>
-                <BadgeCheck size={16} className="text-blue-500 shrink-0 " />
-
+                <BadgeCheck size={14} className="text-blue-500 shrink-0" />
                 {job.jobType && <JTypeBadge value={job.jobType} />}
               </div>
 
-              <div className="mt-1 space-y-1">
-                {/* Row 1 */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                  {job.companyName && (
-                    <span className="flex items-center gap-1">
-                      <Building2 size={11} /> {job.companyName}
-                    </span>
-                  )}
+              {/* Meta line 1 */}
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1 text-xs text-gray-500">
+                {job.companyName && (
+                  <span className="flex items-center gap-1">
+                    <Building2 size={10} />
+                    {job.companyName}
+                  </span>
+                )}
+                {job.location && (
+                  <span className="flex items-center gap-1">
+                    <MapPin size={10} />
+                    {job.location}
+                  </span>
+                )}
+                {job.workMode && (
+                  <span className="flex items-center gap-1">
+                    <Monitor size={10} />
+                    {job.workMode.replace(/_/g, " ")}
+                  </span>
+                )}
+                {job.experienceRequired && (
+                  <span className="flex items-center gap-1">
+                    <Briefcase size={10} />
+                    {job.experienceRequired}
+                  </span>
+                )}
+              </div>
 
-                  {job.location && (
-                    <span className="flex items-center gap-1">
-                      <MapPin size={11} /> {job.location}
-                    </span>
-                  )}
-
-                  {job.workMode && (
-                    <span className="flex items-center gap-1">
-                      <Monitor size={11} /> {job.workMode.replace(/_/g, " ")}
-                    </span>
-                  )}
-
-                  {job.experienceRequired && (
-                    <span className="flex items-center gap-1">
-                      <Briefcase size={11} /> {job.experienceRequired}
-                    </span>
-                  )}
-                </div>
-
-                {/* Row 2 */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                  {job.salary && (
-                    <span className="flex items-center gap-1">
-                      <IndianRupee size={10} /> {fmtSalary(job.salary)}
-                    </span>
-                  )}
-
-                  {job.lastDateToApply && (
-                    <span className="flex items-center gap-1 text-gray-500">
-                      <CalendarDays size={11} /> Apply by{" "}
-                      {fmtDate(job.lastDateToApply)}
-                    </span>
-                  )}
-                </div>
+              {/* Meta line 2 */}
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-0.5 text-xs text-gray-500">
+                {job.salary && (
+                  <span className="flex items-center gap-1">
+                    <IndianRupee size={10} />
+                    {fmtSalary(job.salary)}
+                  </span>
+                )}
+                {job.lastDateToApply && (
+                  <span className="flex items-center gap-1">
+                    <CalendarDays size={10} />
+                    Apply by {fmtDate(job.lastDateToApply)}
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Time + bookmark */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-xs text-gray-400 whitespace-nowrap hidden md:block">
                 {timeAgo(job.createdAt || job.postedOn)}
               </span>
               <button
                 onClick={() => onSave(job.id)}
                 className={`p-1.5 rounded-lg transition-all ${saved ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"}`}
               >
-                {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+                {saved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
               </button>
             </div>
           </div>
 
           {/* Skills */}
           {shown.length > 0 && (
-            <div className="flex items-center flex-wrap gap-1.5 mt-3">
+            <div className="flex items-center flex-wrap gap-1.5 mt-2.5">
               {shown.map((s, i) => (
                 <SkillChip key={i} name={s} />
               ))}
@@ -491,29 +510,43 @@ function JobCard({ job, matchPct, saved, onSave, onApply }) {
           )}
         </div>
 
-        {/* Match ring + apply (sm+) */}
-        <div className="hidden sm:flex flex-col items-center gap-2.5 shrink-0">
+        {/* Match + Apply — sm and above */}
+        <div className="hidden sm:flex flex-col items-center gap-2 shrink-0">
           <MatchRing pct={matchPct} />
-          <button
-            onClick={() => onApply(job)}
-            className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm shadow-blue-200 whitespace-nowrap"
-          >
-            Apply Now
-          </button>
+          {isCandidate &&
+            (applied ? (
+              <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-green-700 bg-green-50 border border-green-200 whitespace-nowrap">
+                <CheckCircle2 size={11} /> Applied
+              </span>
+            ) : (
+              <button
+                onClick={() => onApply(job)}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm whitespace-nowrap"
+              >
+                Apply Now
+              </button>
+            ))}
         </div>
       </div>
 
-      {/* Mobile bar */}
+      {/* Mobile: match + apply */}
       <div className="sm:hidden flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-        <span className="text-sm font-bold text-blue-600">
+        <span className="text-sm font-bold" style={{ color: matchColor }}>
           {matchPct}% Match
         </span>
-        <button
-          onClick={() => onApply(job)}
-          className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
-        >
-          Apply Now
-        </button>
+        {isCandidate &&
+          (applied ? (
+            <span className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-green-700 bg-green-50 border border-green-200">
+              <CheckCircle2 size={11} /> Applied
+            </span>
+          ) : (
+            <button
+              onClick={() => onApply(job)}
+              className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+            >
+              Apply Now
+            </button>
+          ))}
       </div>
     </div>
   );
@@ -525,7 +558,6 @@ function JobCard({ job, matchPct, saved, onSave, onApply }) {
 
 const EXP_LEVELS = ["Fresher", "1 - 3 years", "3 - 5 years", "5+ years"];
 
-// Mock applications — replace when backend application endpoint is ready
 const MOCK_APPLICATIONS = [
   {
     title: "Senior Backend Developer",
@@ -548,7 +580,7 @@ const MOCK_APPLICATIONS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Page
+// Main Page
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function JobListingPage() {
@@ -561,20 +593,20 @@ export default function JobListingPage() {
     }
   })();
   const firstName = (user.username || user.name || "User").split(" ")[0];
+  const isCandidate = user.role === "CANDIDATE";
 
-  // ── Backend data ───────────────────────────────────────────────────────────
-  const [jobs, setJobs] = useState([]); // GET /jobs
-  const [matchMap, setMatchMap] = useState({}); // GET /jobmatch/match → { jobId: pct }
-  const [allSkills, setAllSkills] = useState([]); // GET /skills
-  const [jobTypes, setJobTypes] = useState([]); // GET /enums/job-types
-  const [workModes, setWorkModes] = useState([]); // GET /enums/work-modes (not used in filter yet)
+  // ── Data ──────────────────────────────────────────────────────────────────
+  const [jobs, setJobs] = useState([]);
+  const [matchMap, setMatchMap] = useState({});
+  const [allSkills, setAllSkills] = useState([]);
+  const [jobTypes, setJobTypes] = useState([]);
 
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState("");
   const [matchLoading, setMatchLoading] = useState(false);
   const [skillsLoading, setSkillsLoading] = useState(true);
 
-  // ── Filter / search ────────────────────────────────────────────────────────
+  // ── Filters ────────────────────────────────────────────────────────────────
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [jobTypeSearch, setJobTypeSearch] = useState("");
@@ -584,16 +616,27 @@ export default function JobListingPage() {
   const [salaryRange, setSalaryRange] = useState("Any");
   const [skillSearch, setSkillSearch] = useState("");
   const [showMoreSkills, setShowMoreSkills] = useState(false);
-  const [savedJobs, setSavedJobs] = useState(new Set());
+
+  const [savedJobs, setSavedJobs] = useState(() => {
+    try {
+      return new Set(
+        JSON.parse(localStorage.getItem("savedJobIds") || "[]").map(String),
+      );
+    } catch {
+      return new Set();
+    }
+  });
 
   // ── UI ─────────────────────────────────────────────────────────────────────
   const [sortBy, setSortBy] = useState("Most Relevant");
   const [viewMode, setViewMode] = useState("list");
   const [page, setPage] = useState(1);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [appliedJobs, setAppliedJobs] = useState(new Set());
+
   const ROWS = viewMode === "grid" ? 6 : 5;
 
-  // ── 1. GET /jobs ──────────────────────────────────────────────────────────
+  // ── API calls ──────────────────────────────────────────────────────────────
   const fetchJobs = useCallback(() => {
     setJobsLoading(true);
     setJobsError("");
@@ -607,8 +650,6 @@ export default function JobListingPage() {
     fetchJobs();
   }, [fetchJobs]);
 
-  // ── 2. GET /jobmatch/match ────────────────────────────────────────────────
-  //    Response: [{jobId, matchPercentage}] or {jobId: pct}
   useEffect(() => {
     if (!localStorage.getItem("token")) return;
     setMatchLoading(true);
@@ -630,34 +671,37 @@ export default function JobListingPage() {
         }
         setMatchMap(map);
       })
-      .catch(() => {}) // non-fatal
+      .catch(() => {})
       .finally(() => setMatchLoading(false));
   }, []);
 
-  // ── 3. GET /skills ─────────────────────────────────────────────────────────
   useEffect(() => {
     API.get("/skills")
       .then((r) => {
-        const names = (r.data || [])
-          .map((s) =>
-            typeof s === "string" ? s : s?.name || s?.skillName || "",
-          )
-          .filter(Boolean);
-        setAllSkills(names);
+        setAllSkills(
+          (r.data || [])
+            .map((s) =>
+              typeof s === "string" ? s : s?.name || s?.skillName || "",
+            )
+            .filter(Boolean),
+        );
       })
       .catch(() => {})
       .finally(() => setSkillsLoading(false));
   }, []);
 
-  // ── 4. GET /enums ──────────────────────────────────────────────────────────
   useEffect(() => {
     API.get("/enums/job-types")
       .then((r) => setJobTypes(r.data || []))
       .catch(() => {});
-    API.get("/enums/work-modes")
-      .then((r) => setWorkModes(r.data || []))
-      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!localStorage.getItem("token") || !isCandidate) return;
+    API.get("/applications/my")
+      .then((r) => setAppliedJobs(new Set((r.data || []).map((a) => a.jobId))))
+      .catch(() => {});
+  }, [isCandidate]);
 
   // ── Filter + sort ──────────────────────────────────────────────────────────
   const filtered = jobs.filter((j) => {
@@ -687,7 +731,6 @@ export default function JobListingPage() {
     if (sortBy === "Newest First")
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     if (sortBy === "Highest Salary") return (b.salary ?? 0) - (a.salary ?? 0);
-    // "Most Relevant" + "Best Match" → sort by match %
     return (matchMap[String(b.id)] ?? 0) - (matchMap[String(a.id)] ?? 0);
   });
 
@@ -711,12 +754,27 @@ export default function JobListingPage() {
     setCheckedSkills((p) =>
       p.includes(s) ? p.filter((x) => x !== s) : [...p, s],
     );
+
   const toggleSave = (id) =>
     setSavedJobs((p) => {
-      const n = new Set(p);
-      n.has(id) ? n.delete(id) : n.add(id);
+      const n = new Set(p),
+        key = String(id);
+      if (n.has(key)) {
+        n.delete(key);
+      } else {
+        n.add(key);
+        try {
+          const dates = JSON.parse(
+            localStorage.getItem("savedJobDates") || "{}",
+          );
+          dates[key] = new Date().toISOString();
+          localStorage.setItem("savedJobDates", JSON.stringify(dates));
+        } catch {}
+      }
+      localStorage.setItem("savedJobIds", JSON.stringify([...n]));
       return n;
     });
+
   const handleApply = (job) => navigate(`/jobs/${job.id}`);
   const clearAll = () => {
     setCheckedTypes([]);
@@ -725,7 +783,6 @@ export default function JobListingPage() {
     setSalaryRange("Any");
     setSkillSearch("");
   };
-
   const getMatch = (job) =>
     matchMap[String(job.id)] ?? job.matchPercentage ?? 0;
 
@@ -735,10 +792,10 @@ export default function JobListingPage() {
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
   const SidebarContent = (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-          <SlidersHorizontal size={14} className="text-blue-600" /> Filters
+          <SlidersHorizontal size={13} className="text-blue-600" /> Filters
         </h3>
         <button
           onClick={clearAll}
@@ -748,9 +805,8 @@ export default function JobListingPage() {
         </button>
       </div>
 
-      {/* Job Type — from GET /enums/job-types */}
       <div>
-        <p className="text-xs font-bold text-gray-800 uppercase tracking-wide mb-2.5">
+        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
           Job Type
         </p>
         <div className="space-y-2">
@@ -761,7 +817,7 @@ export default function JobListingPage() {
           />
           {(jobTypes.length > 0
             ? jobTypes
-            : ["Full-time", "Part-time", "Contract", "Internship", "Remote"]
+            : ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "FREELANCE"]
           ).map((t) => (
             <FilterCheckbox
               key={t}
@@ -775,14 +831,13 @@ export default function JobListingPage() {
 
       <div className="border-t border-gray-100" />
 
-      {/* Skills — from GET /skills */}
       <div>
-        <p className="text-xs font-bold text-gray-800 uppercase tracking-wide mb-2.5">
+        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
           Skills
         </p>
-        <div className="relative mb-2.5">
+        <div className="relative mb-2">
           <Search
-            size={13}
+            size={12}
             className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
@@ -790,12 +845,12 @@ export default function JobListingPage() {
             value={skillSearch}
             onChange={(e) => setSkillSearch(e.target.value)}
             placeholder="Search skills"
-            className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-100 transition-all"
+            className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-blue-500 transition-all"
           />
         </div>
         {skillsLoading ? (
-          <div className="flex items-center gap-2 text-xs text-gray-400 py-2">
-            <Loader2 size={12} className="animate-spin" /> Loading…
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 py-1">
+            <Loader2 size={11} className="animate-spin" /> Loading…
           </div>
         ) : (
           <div className="space-y-2">
@@ -812,13 +867,13 @@ export default function JobListingPage() {
         {allSkills.length > 6 && (
           <button
             onClick={() => setShowMoreSkills(!showMoreSkills)}
-            className="flex items-center gap-1 text-xs text-blue-600 font-medium mt-2 hover:underline"
+            className="flex items-center gap-1 text-xs text-blue-600 font-medium mt-1.5 hover:underline"
           >
             {showMoreSkills
               ? "Show less"
               : `Show more (${allSkills.length - 6})`}
             <ChevronDown
-              size={12}
+              size={11}
               className={`transition-transform ${showMoreSkills ? "rotate-180" : ""}`}
             />
           </button>
@@ -827,9 +882,8 @@ export default function JobListingPage() {
 
       <div className="border-t border-gray-100" />
 
-      {/* Experience */}
       <div>
-        <p className="text-xs font-bold text-gray-800 uppercase tracking-wide mb-2.5">
+        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
           Experience Level
         </p>
         <div className="space-y-2">
@@ -850,9 +904,8 @@ export default function JobListingPage() {
 
       <div className="border-t border-gray-100" />
 
-      {/* Salary */}
       <div>
-        <p className="text-xs font-bold text-gray-800 uppercase tracking-wide mb-2.5">
+        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
           Salary Range
         </p>
         <SalaryDropdown value={salaryRange} onChange={setSalaryRange} />
@@ -863,30 +916,30 @@ export default function JobListingPage() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
-      {/* ── Hero ── */}
-      <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 overflow-visible">
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full" />
-        <div className="absolute top-6 right-32 w-24 h-24 bg-white/5 rounded-full" />
-        <div className="absolute -bottom-8 left-1/3 w-36 h-36 bg-white/5 rounded-full" />
+      {/* ── Hero banner ── */}
+      <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full pointer-events-none" />
+        <div className="absolute top-6 right-32 w-24 h-24 bg-white/5 rounded-full pointer-events-none" />
 
-        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-8 pb-0">
-          <div className="max-w-2xl mb-6">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+        <div className="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-7 sm:pt-10 pb-0">
+          <div className="max-w-2xl mb-5 sm:mb-7">
+            <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
               Find the right job
               <br />
               with <span className="text-yellow-400">smart matching</span>
             </h1>
-            <p className="text-blue-100 text-sm sm:text-base mt-2">
+            <p className="text-blue-100 text-sm mt-2">
               Our AI matches your skills with the best opportunities.
             </p>
           </div>
 
-          {/* Search bar */}
-          <div className="bg-white rounded-2xl rounded-b-none shadow-xl p-4 sm:p-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center relative z-50 overflow-visible">
+          {/* Search bar — connects visually to page body below */}
+          <div className="bg-white rounded-2xl rounded-b-none shadow-xl px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            {/* Keyword */}
             <div className="flex-1 relative min-w-0">
               <Search
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
               />
               <input
                 type="text"
@@ -899,10 +952,12 @@ export default function JobListingPage() {
                 className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
               />
             </div>
+
+            {/* Location */}
             <div className="flex-1 relative min-w-0">
               <MapPin
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
               />
               <input
                 type="text"
@@ -915,53 +970,52 @@ export default function JobListingPage() {
                 className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
               />
             </div>
-            <div className="relative w-[180px] shrink-0">
-              <Briefcase
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
-              />
 
-              <JobTypeDropdownUI
+            {/* Job type */}
+            <div className="w-full sm:w-40 shrink-0">
+              <JobTypeDropdown
                 value={jobTypeSearch}
-                onChange={(val) => {
-                  setJobTypeSearch(val);
+                onChange={(v) => {
+                  setJobTypeSearch(v);
                   setPage(1);
                 }}
                 options={
                   jobTypes.length > 0
                     ? jobTypes
-                    : ["Full-time", "Part-time", "Contract", "Internship"]
+                    : ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP"]
                 }
               />
             </div>
+
+            {/* CTA */}
             <button
               onClick={() => setPage(1)}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm shadow-blue-300 whitespace-nowrap"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all whitespace-nowrap shrink-0"
             >
-              <Search size={15} /> Search Jobs
+              <Search size={14} /> Search Jobs
             </button>
           </div>
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-5">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-5">
         <div className="flex gap-5 items-start">
-          {/* Left sidebar */}
-          <aside className="hidden lg:block w-52 xl:w-56 shrink-0 bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sticky top-20">
+          {/* Left sidebar — sticky, scrollable internally */}
+          <aside className="hidden lg:block w-52 xl:w-56 shrink-0 sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
             {SidebarContent}
           </aside>
 
           {/* Centre */}
           <div className="flex-1 min-w-0">
             {/* Toolbar */}
-            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setMobileSidebarOpen(true)}
                   className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-all text-gray-700 font-medium"
                 >
-                  <SlidersHorizontal size={14} /> Filters
+                  <SlidersHorizontal size={13} /> Filters
                 </button>
                 <p className="text-sm text-gray-600">
                   <span className="font-bold text-gray-900">
@@ -970,19 +1024,20 @@ export default function JobListingPage() {
                   jobs found
                   {matchLoading && (
                     <span className="ml-2 inline-flex items-center gap-1 text-xs text-gray-400">
-                      <Loader2 size={11} className="animate-spin" /> Calculating
-                      match…
+                      <Loader2 size={11} className="animate-spin" />{" "}
+                      Calculating…
                     </span>
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={fetchJobs}
                   title="Refresh"
                   className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
                 >
-                  <RefreshCw size={14} />
+                  <RefreshCw size={13} />
                 </button>
                 <span className="text-xs text-gray-500 hidden sm:block">
                   Sort by:
@@ -993,13 +1048,13 @@ export default function JobListingPage() {
                     onClick={() => setViewMode("grid")}
                     className={`p-2 transition-colors ${viewMode === "grid" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-50"}`}
                   >
-                    <LayoutGrid size={15} />
+                    <LayoutGrid size={14} />
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
                     className={`p-2 transition-colors ${viewMode === "list" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-50"}`}
                   >
-                    <List size={15} />
+                    <List size={14} />
                   </button>
                 </div>
               </div>
@@ -1015,8 +1070,8 @@ export default function JobListingPage() {
               </div>
             ) : jobsError ? (
               <div className="flex flex-col items-center gap-4 py-16">
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-5 py-3.5 text-sm max-w-md w-full">
-                  <AlertCircle size={15} className="shrink-0" /> {jobsError}
+                <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-xl px-5 py-3 text-sm max-w-md w-full">
+                  <AlertCircle size={14} className="shrink-0" /> {jobsError}
                 </div>
                 <button
                   onClick={fetchJobs}
@@ -1027,9 +1082,9 @@ export default function JobListingPage() {
               </div>
             ) : paginated.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
-                <Search size={36} className="text-gray-300" />
+                <Search size={32} className="text-gray-300" />
                 <p className="text-gray-500 text-sm">
-                  No jobs match your search. Try adjusting the filters.
+                  No jobs match your search.
                 </p>
                 <button
                   onClick={clearAll}
@@ -1042,7 +1097,7 @@ export default function JobListingPage() {
               <div
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    ? "grid grid-cols-1 sm:grid-cols-2 gap-3"
                     : "flex flex-col gap-3"
                 }
               >
@@ -1051,9 +1106,11 @@ export default function JobListingPage() {
                     key={job.id}
                     job={job}
                     matchPct={getMatch(job)}
-                    saved={savedJobs.has(job.id)}
+                    saved={savedJobs.has(String(job.id))}
                     onSave={toggleSave}
                     onApply={handleApply}
+                    applied={appliedJobs.has(job.id)}
+                    isCandidate={isCandidate}
                   />
                 ))}
               </div>
@@ -1061,7 +1118,7 @@ export default function JobListingPage() {
 
             {/* Pagination */}
             {!jobsLoading && !jobsError && sorted.length > 0 && (
-              <div className="flex items-center justify-center gap-1.5 mt-6">
+              <div className="flex items-center justify-center gap-1.5 mt-6 flex-wrap">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safeP === 1}
@@ -1096,15 +1153,15 @@ export default function JobListingPage() {
           </div>
 
           {/* Right sidebar */}
-          <aside className="hidden xl:flex flex-col gap-4 w-64 shrink-0">
+          <aside className="hidden xl:flex flex-col gap-4 w-60 2xl:w-64 shrink-0">
             {/* Profile */}
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-base font-bold shrink-0">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
                   {firstName[0]?.toUpperCase()}
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 truncate">
                     Hi, {firstName} 👋
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -1113,7 +1170,7 @@ export default function JobListingPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-1.5">
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-600 rounded-full"
                     style={{ width: "80%" }}
@@ -1130,7 +1187,7 @@ export default function JobListingPage() {
             </div>
 
             {/* Quick links */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-col gap-2">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-col gap-1.5">
               <QuickLinkCard
                 icon={Star}
                 color={{ bg: "#FFF7ED", icon: "#F97316" }}
@@ -1141,7 +1198,7 @@ export default function JobListingPage() {
               <QuickLinkCard
                 icon={TrendingUp}
                 color={{ bg: "#F0FDF4", icon: "#16A34A" }}
-                title="Skill Gap & Recommendations"
+                title="Skill Gap"
                 subtitle="Find missing skills and get suggestions"
                 onClick={() => navigate("/skill-gap")}
               />
@@ -1222,10 +1279,10 @@ export default function JobListingPage() {
                   },
                 ].map(({ icon: Icon, value, label, color }) => (
                   <div key={label} className="flex flex-col items-center gap-1">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-50">
-                      <Icon size={16} style={{ color }} />
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-50">
+                      <Icon size={13} style={{ color }} />
                     </div>
-                    <span className="text-base font-bold text-gray-900">
+                    <span className="text-sm font-bold text-gray-900">
                       {value}
                     </span>
                     <span className="text-[10px] text-gray-400 leading-tight text-center">
@@ -1241,12 +1298,12 @@ export default function JobListingPage() {
 
       {/* Mobile filter drawer */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="relative ml-auto w-72 max-w-full bg-white h-full overflow-y-auto shadow-2xl p-5">
+          <div className="relative ml-auto w-72 max-w-[85vw] bg-white h-full overflow-y-auto shadow-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-gray-900">Filters</h3>
               <button

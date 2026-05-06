@@ -22,6 +22,7 @@ import JobListingPage from "../pages/JobListingPage";
 import SkillManagementPage from "../pages/SkillManagementPage";
 import SkillGapPage from "../pages/SkillGapPage";
 import MyApplicationsPage from "../pages/MyApplicationsPage";
+import JobDetailPage from "../pages/JobDetailPage";
 
 export default function AppRoutes() {
   return (
@@ -45,6 +46,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<CandidateLayout />}>
           <Route path="/find-jobs" element={<JobListingPage />} />
+          <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="/skill-management" element={<SkillManagementPage />} />
           <Route path="/skill-gap" element={<SkillGapPage />} />
           <Route path="/my-applications" element={<MyApplicationsPage />} />
