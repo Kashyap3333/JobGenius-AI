@@ -25,6 +25,7 @@ import {
   Building2,
   TrendingUp,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -193,10 +194,10 @@ function ApplyModal({ job, onClose, onSuccess }) {
     setError("");
     try {
       // POST /applications/{jobId}  with optional coverLetter
-      await API.post(`/applications/${job.id}`, {
+      const res = await API.post(`/applications/${job.id}`, {
         coverLetter: coverLetter.trim() || null,
       });
-      onSuccess();
+      onSuccess(res.data?.id);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -308,6 +309,33 @@ function SuccessToast({ onClose }) {
   );
 }
 
+function WithdrawToast({ onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-red-600 text-white px-5 py-3.5 rounded-2xl shadow-xl animate-in slide-in-from-bottom-4">
+      <Trash2 size={18} />
+
+      <div>
+        <p className="text-sm font-bold">Application Withdrawn!</p>
+
+        <p className="text-xs text-red-100 mt-0.5">
+          You can apply again anytime.
+        </p>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="ml-2 hover:text-red-200 transition-colors"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────────────────────
@@ -336,7 +364,9 @@ export default function JobDetailPage() {
   // ── Modal / toast ─────────────────────────────────────────────────────────
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
+  const [showWithdrawSuccess, setShowWithdrawSuccess] = useState(false);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [applicationId, setApplicationId] = useState(null);
   // ── 1. GET /jobs/{id} ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!id) return;
@@ -353,9 +383,9 @@ export default function JobDetailPage() {
     if (!id || !localStorage.getItem("token")) return;
     API.get(`/applications/check/${id}`)
       .then((r) => {
-        // response may be boolean or {applied: boolean}
         const applied = r.data === true || r.data?.applied === true;
         setAlreadyApplied(applied);
+        if (r.data?.applicationId) setApplicationId(r.data.applicationId);
       })
       .catch(() => {});
   }, [id]);
@@ -383,10 +413,11 @@ export default function JobDetailPage() {
   }, [id]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleApplySuccess = () => {
+  const handleApplySuccess = (appId) => {
     setShowApplyModal(false);
     setAlreadyApplied(true);
     setShowSuccess(true);
+    if (appId) setApplicationId(appId);
   };
 
   const handleToggleSave = () => {
@@ -412,7 +443,23 @@ export default function JobDetailPage() {
       return next;
     });
   };
+  const handleWithdrawApplication = async () => {
+    try {
+      setWithdrawLoading(true);
 
+      await API.delete(`/applications/${applicationId}`);
+      setAlreadyApplied(false);
+      setApplicationId(null);
+      setShowWithdrawSuccess(true);
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          "Failed to withdraw application. Please try again.",
+      );
+    } finally {
+      setWithdrawLoading(false);
+    }
+  };
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -562,9 +609,21 @@ export default function JobDetailPage() {
                 {/* CTA buttons (desktop right) */}
                 <div className="hidden sm:flex flex-col gap-2.5 shrink-0 min-w-[160px]">
                   {alreadyApplied ? (
-                    <div className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-green-700 bg-green-50 border border-green-200">
-                      <CheckCircle2 size={15} /> Applied
-                    </div>
+                    <button
+                      onClick={handleWithdrawApplication}
+                      disabled={withdrawLoading}
+                      className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                    >
+                      {withdrawLoading ? (
+                        <Loader2 size={15} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={15} />
+                      )}
+
+                      {withdrawLoading
+                        ? "Withdrawing..."
+                        : "Withdraw Application"}
+                    </button>
                   ) : (
                     <button
                       onClick={() => setShowApplyModal(true)}
@@ -615,9 +674,19 @@ export default function JobDetailPage() {
               {/* Mobile CTA */}
               <div className="flex gap-2.5 mt-4 sm:hidden">
                 {alreadyApplied ? (
-                  <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-green-700 bg-green-50 border border-green-200">
-                    <CheckCircle2 size={15} /> Applied
-                  </div>
+                  <button
+                    onClick={handleWithdrawApplication}
+                    disabled={withdrawLoading}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                  >
+                    {withdrawLoading ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={15} />
+                    )}
+
+                    {withdrawLoading ? "Withdrawing..." : "Withdraw"}
+                  </button>
                 ) : (
                   <button
                     onClick={() => setShowApplyModal(true)}
@@ -884,6 +953,9 @@ export default function JobDetailPage() {
 
       {/* ── Success Toast ── */}
       {showSuccess && <SuccessToast onClose={() => setShowSuccess(false)} />}
+      {showWithdrawSuccess && (
+        <WithdrawToast onClose={() => setShowWithdrawSuccess(false)} />
+      )}
     </div>
   );
 }

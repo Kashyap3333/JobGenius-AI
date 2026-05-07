@@ -62,10 +62,16 @@ public class ApplicationController {
     }
 
     @GetMapping("/check/{jobId}")
-    public ResponseEntity<Map<String, Boolean>> checkApplied(
+    public ResponseEntity<Map<String, Object>> checkApplied(
             @PathVariable Long jobId,
             Authentication authentication) {
         boolean applied = applicationService.hasApplied(jobId, authentication.getName());
-        return ResponseEntity.ok(Map.of("applied", applied));
+        Long applicationId = applied
+                ? applicationService.getApplicationId(jobId, authentication.getName())
+                : null;
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("applied", applied);
+        result.put("applicationId", applicationId);
+        return ResponseEntity.ok(result);
     }
 }
