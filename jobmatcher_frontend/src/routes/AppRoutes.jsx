@@ -48,6 +48,7 @@ export default function AppRoutes() {
           <Route path="/find-jobs" element={<JobListingPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="/skill-management" element={<SkillManagementPage />} />
+          <Route path="/skill-gap/:jobId" element={<SkillGapPage />} />
           <Route path="/skill-gap" element={<SkillGapPage />} />
           <Route path="/my-applications" element={<MyApplicationsPage />} />
         </Route>

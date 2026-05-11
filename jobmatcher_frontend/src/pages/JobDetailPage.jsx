@@ -798,7 +798,7 @@ export default function JobDetailPage() {
                 </p>
               </div>
               <button
-                onClick={() => navigate("/skill-gap")}
+                onClick={() => navigate(`/skill-gap/${job.id}`)}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm shadow-blue-200 whitespace-nowrap shrink-0"
               >
                 View Skill Gap &amp; Recommendations <ArrowRight size={14} />
@@ -877,7 +877,7 @@ export default function JobDetailPage() {
               </h3>
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => navigate("/skill-gap")}
+                  onClick={() => navigate(`/skill-gap/${job.id}`)}
                   className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group text-left"
                 >
                   <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center shrink-0">

@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutGrid,
+  // navigate,
   List,
   BadgeCheck,
   IndianRupee,
@@ -393,6 +394,7 @@ function AppStatusBadge({ status }) {
 function JobCard({
   job,
   matchPct,
+  navigate,
   saved,
   onSave,
   onApply,
@@ -406,7 +408,10 @@ function JobCard({
     matchPct >= 85 ? "#16a34a" : matchPct >= 70 ? "#2563eb" : "#f59e0b";
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-md transition-all group">
+    <div
+      onClick={() => navigate(`/jobs/${job.id}`)}
+      className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-blue-300 hover:shadow-md transition-all group cursor-pointer"
+    >
       <div className="flex items-start gap-3">
         {/* Logo */}
         <div className="w-11 h-11 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
@@ -487,7 +492,10 @@ function JobCard({
                 {timeAgo(job.createdAt || job.postedOn)}
               </span>
               <button
-                onClick={() => onSave(job.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSave(job.id);
+                }}
                 className={`p-1.5 rounded-lg transition-all ${saved ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"}`}
               >
                 {saved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
@@ -520,7 +528,10 @@ function JobCard({
               </span>
             ) : (
               <button
-                onClick={() => onApply(job)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onApply(job);
+                }}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm whitespace-nowrap"
               >
                 Apply Now
@@ -541,7 +552,10 @@ function JobCard({
             </span>
           ) : (
             <button
-              onClick={() => onApply(job)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onApply(job);
+              }}
               className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
             >
               Apply Now
@@ -1105,6 +1119,7 @@ export default function JobListingPage() {
                   <JobCard
                     key={job.id}
                     job={job}
+                    navigate={navigate}
                     matchPct={getMatch(job)}
                     saved={savedJobs.has(String(job.id))}
                     onSave={toggleSave}
