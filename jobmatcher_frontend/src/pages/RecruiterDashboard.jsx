@@ -424,7 +424,7 @@ export default function RecruiterDashboard() {
                         {fmt(job.lastDateToApply || job.deadline)}
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
-                        {fmt(job.createdAt || job.postedOn)}
+                        {fmt(job.postedDate)}
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4">
                         <ActionMenu jobId={job.id} onDelete={handleDelete} />

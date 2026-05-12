@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Loader2,
   AlertCircle,
+  Users,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -96,7 +97,7 @@ function FilterDropdown({ label, value, options, onChange }) {
     <div ref={ref} className="relative min-w-[130px]">
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm border rounded-xl bg-white transition-all
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm border rounded-xl bg-white transition-all cursor-pointer
           ${open ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-200 hover:border-gray-300"}`}
       >
         <span className="text-gray-700 truncate">{value || label}</span>
@@ -159,14 +160,14 @@ function DeleteModal({ job, onConfirm, onCancel, loading }) {
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all"
+            className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 transition-all flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -201,7 +202,7 @@ function RowsPerPage({ value, onChange }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all cursor-pointer"
       >
         {value}
         <ChevronDown
@@ -239,6 +240,9 @@ export default function ManageJobs() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
 
+  // Applicant counts per job { [jobId]: number }
+  const [applicantCounts, setApplicantCounts] = useState({});
+
   // Filters
   const [search, setSearch] = useState("");
   const [jobTypeFilter, setJobTypeFilter] = useState("");
@@ -267,9 +271,29 @@ export default function ManageJobs() {
     setLoading(true);
     setFetchError("");
     API.get("/jobs/recruiter")
-      .then((res) => setJobs(res.data || []))
+      .then((res) => {
+        const jobList = res.data || [];
+        setJobs(jobList);
+        // Fetch applicant counts for all jobs in parallel
+        fetchApplicantCounts(jobList);
+      })
       .catch(() => setFetchError("Failed to load jobs. Please try again."))
       .finally(() => setLoading(false));
+  };
+
+  const fetchApplicantCounts = async (jobList) => {
+    const counts = {};
+    await Promise.allSettled(
+      jobList.map(async (job) => {
+        try {
+          const res = await API.get(`/applications/job/${job.id}`);
+          counts[job.id] = (res.data || []).length;
+        } catch {
+          counts[job.id] = 0;
+        }
+      }),
+    );
+    setApplicantCounts(counts);
   };
 
   useEffect(() => {
@@ -343,7 +367,6 @@ export default function ManageJobs() {
 
   // ── Render ─────────────────────────────────────────────────
   return (
-    // ✅ FIXED: matches navbar max-w-[1600px] mx-auto padding exactly
     <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 xl:px-13 py-6 sm:py-8">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -357,7 +380,7 @@ export default function ManageJobs() {
         </div>
         <button
           onClick={() => navigate("/post-job")}
-          className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm shadow-blue-200 shrink-0 w-fit"
+          className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm shadow-blue-200 shrink-0 w-fit cursor-pointer"
         >
           <Plus size={16} /> Post New Job
         </button>
@@ -366,7 +389,6 @@ export default function ManageJobs() {
       {/* Filter bar */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-4 sm:px-5 py-4 mb-5">
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-          {/* Search */}
           <div className="relative flex-1 min-w-[180px]">
             <Search
               size={15}
@@ -383,7 +405,6 @@ export default function ManageJobs() {
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
             />
           </div>
-
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <FilterDropdown
               label="Job Type"
@@ -414,7 +435,7 @@ export default function ManageJobs() {
             />
             <button
               onClick={resetFilters}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 transition-all cursor-pointer"
             >
               <RotateCcw size={13} /> Reset
             </button>
@@ -435,16 +456,15 @@ export default function ManageJobs() {
           </div>
           <button
             onClick={fetchJobs}
-            className="text-sm text-blue-600 hover:underline font-medium"
+            className="text-sm text-blue-600 hover:underline font-medium cursor-pointer"
           >
             Try again
           </button>
         </div>
       ) : (
-        /* Table card */
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[860px]">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   {[
@@ -453,9 +473,9 @@ export default function ManageJobs() {
                     "Job Type",
                     "Work Mode",
                     "Experience",
-                    "Posted On",
                     "Last Date",
                     "Status",
+                    "Applicants",
                     "Skills",
                     "Actions",
                   ].map((h) => (
@@ -481,7 +501,7 @@ export default function ManageJobs() {
                         </p>
                         <button
                           onClick={resetFilters}
-                          className="text-xs text-blue-600 hover:underline"
+                          className="text-xs text-blue-600 hover:underline cursor-pointer"
                         >
                           Clear filters
                         </button>
@@ -492,8 +512,7 @@ export default function ManageJobs() {
                   paginated.map((job, i) => (
                     <tr
                       key={job.id}
-                      className={`border-b border-gray-50 hover:bg-blue-50/30 transition-colors
-                        ${i % 2 !== 0 ? "bg-gray-50/30" : ""}`}
+                      className={`border-b border-gray-50 hover:bg-blue-50/30 transition-colors ${i % 2 !== 0 ? "bg-gray-50/30" : ""}`}
                     >
                       {/* Job Title */}
                       <td className="px-4 py-3.5">
@@ -525,16 +544,10 @@ export default function ManageJobs() {
                         {job.experienceRequired || "—"}
                       </td>
 
-                      {/* Posted On */}
-                      <td className="px-4 py-3.5 text-sm text-gray-500 whitespace-nowrap">
-                        {fmt(job.createdAt || job.postedOn)}
-                      </td>
-
                       {/* Last Date */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span
-                          className={`text-sm font-medium
-                          ${isExpiringSoon(job.lastDateToApply) ? "text-red-500" : "text-gray-700"}`}
+                          className={`text-sm font-medium ${isExpiringSoon(job.lastDateToApply) ? "text-red-500" : "text-gray-700"}`}
                         >
                           {fmt(job.lastDateToApply)}
                         </span>
@@ -548,6 +561,24 @@ export default function ManageJobs() {
                       {/* Status */}
                       <td className="px-4 py-3.5">
                         <StatusBadge value={job.status || "ACTIVE"} />
+                      </td>
+
+                      {/* Applicants — NEW */}
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+                            <Users size={13} className="text-blue-400" />
+                            {applicantCounts[job.id] ?? "—"}
+                          </span>
+                          <button
+                            onClick={() =>
+                              navigate(`/manage-jobs/${job.id}/applicants`)
+                            }
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all whitespace-nowrap cursor-pointer"
+                          >
+                            <Users size={11} /> View
+                          </button>
+                        </div>
                       </td>
 
                       {/* Skills */}
@@ -577,14 +608,14 @@ export default function ManageJobs() {
                           <button
                             onClick={() => navigate(`/edit-job/${job.id}`)}
                             title="Edit"
-                            className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-all"
+                            className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => setDeleteTarget(job)}
                             title="Delete"
-                            className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-all"
+                            className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-all cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -605,17 +636,15 @@ export default function ManageJobs() {
               {Math.min(safeP * rowsPerPage, filtered.length)} of{" "}
               {filtered.length} jobs
             </p>
-
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safeP === 1}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ChevronLeft size={14} />
                 </button>
-
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter(
                     (p) =>
@@ -638,27 +667,20 @@ export default function ManageJobs() {
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-all
-                          ${
-                            safeP === p
-                              ? "bg-blue-600 text-white"
-                              : "border border-gray-200 text-gray-700 hover:bg-gray-50"
-                          }`}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-all cursor-pointer ${safeP === p ? "bg-blue-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                       >
                         {p}
                       </button>
                     ),
                   )}
-
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safeP === totalPages}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ChevronRight size={14} />
                 </button>
               </div>
-
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 Rows per page
                 <RowsPerPage

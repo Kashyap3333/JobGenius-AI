@@ -16,6 +16,7 @@ import RecruiterDashboard from "../pages/RecruiterDashboard";
 import PostJobPage from "../pages/PostJobPage";
 import EditJobPage from "../pages/EditJobPage";
 import ManageJobsPage from "../pages/ManageJobPage";
+import JobApplicationPage from "../pages/JobApplicationPage";
 
 // Candidate pages
 import JobListingPage from "../pages/JobListingPage";
@@ -39,6 +40,10 @@ export default function AppRoutes() {
           <Route path="/post-job" element={<PostJobPage />} />
           <Route path="/edit-job/:id" element={<EditJobPage />} />
           <Route path="/manage-jobs" element={<ManageJobsPage />} />
+          <Route
+            path="/manage-jobs/:jobId/applicants"
+            element={<JobApplicationPage />}
+          />
         </Route>
       </Route>
 
