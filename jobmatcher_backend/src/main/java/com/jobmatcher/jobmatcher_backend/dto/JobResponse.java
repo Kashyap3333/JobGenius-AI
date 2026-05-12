@@ -28,6 +28,7 @@ public class JobResponse {
     private Long recruiterId;
 
     private List<String> skills;
+    private long applicationCount;
 
     public JobResponse(Job job) {
         this.id = job.getId();

@@ -4,6 +4,7 @@ import com.jobmatcher.jobmatcher_backend.dto.JobRequest;
 import com.jobmatcher.jobmatcher_backend.dto.JobResponse;
 import com.jobmatcher.jobmatcher_backend.model.Job;
 import com.jobmatcher.jobmatcher_backend.model.User;
+import com.jobmatcher.jobmatcher_backend.repository.ApplicationRepository;
 import com.jobmatcher.jobmatcher_backend.repository.JobRepository;
 import com.jobmatcher.jobmatcher_backend.repository.SkillRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
@@ -25,6 +26,20 @@ public class JobService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
+
+    public List<JobResponse> getJobsByRecruiter(String recruiterEmail) {
+        return jobRepository.findByRecruiterEmail(recruiterEmail)
+                .stream()
+                .map(job -> {
+                    JobResponse res = new JobResponse(job);
+                    res.setApplicationCount(applicationRepository.countByJobId(job.getId()));
+                    return res;
+                })
+                .toList();
+    }
 
     public List<JobResponse> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();

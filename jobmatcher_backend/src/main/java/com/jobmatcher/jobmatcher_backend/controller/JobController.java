@@ -31,6 +31,13 @@ public class JobController {
         return new ResponseEntity<>(jobService.getJobById(jobId), HttpStatus.OK);
     }
 
+    @GetMapping("/recruiter")
+    @PreAuthorize("hasRole('RECRUITER')")
+    public ResponseEntity<List<JobResponse>> getRecruiterJobs(Authentication authentication) {
+        String recruiterEmail = authentication.getName();
+        return new ResponseEntity<>(jobService.getJobsByRecruiter(recruiterEmail), HttpStatus.OK);
+    }
+
 
     @PreAuthorize("hasRole('RECRUITER')")
     @PostMapping

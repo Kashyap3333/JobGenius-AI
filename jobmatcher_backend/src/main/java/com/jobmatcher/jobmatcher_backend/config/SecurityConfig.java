@@ -58,6 +58,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         // ALLOW Public jobs
                         .requestMatchers(HttpMethod.GET, "/jobs").permitAll()
+                        // Recruiter's own jobs
+                        .requestMatchers(HttpMethod.GET, "/jobs/recruiter").hasRole("RECRUITER")
                         //  Job detail — recruiters and candidates can view
                         .requestMatchers(HttpMethod.GET, "/jobs/**").hasAnyRole("RECRUITER", "CANDIDATE")
                         .requestMatchers(HttpMethod.POST, "/jobs").hasRole("RECRUITER")

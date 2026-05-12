@@ -266,7 +266,7 @@ export default function ManageJobs() {
   const fetchJobs = () => {
     setLoading(true);
     setFetchError("");
-    API.get("/jobs")
+    API.get("/jobs/recruiter")
       .then((res) => setJobs(res.data || []))
       .catch(() => setFetchError("Failed to load jobs. Please try again."))
       .finally(() => setLoading(false));

@@ -8,11 +8,12 @@ import {
   Calendar,
   ChevronDown,
   MoreVertical,
-  ArrowRight,
   Pencil,
   Trash2,
   Search,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -147,10 +148,12 @@ export default function RecruiterDashboard() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // ── NEW
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
-    API.get("/jobs")
+    API.get("/jobs/recruiter")
       .then((res) => setJobs(res.data || []))
       .catch(() => setError("Failed to load jobs."))
       .finally(() => setLoading(false));
@@ -170,9 +173,8 @@ export default function RecruiterDashboard() {
   const activeJobs = jobs.filter(
     (j) => (j.status || "Active") === "Active",
   ).length;
-  const totalApplications = jobs.reduce((s, j) => s + (j.applications || 0), 0);
+  const totalApplications = jobs.reduce((s, j) => s + (j.applicationCount || 0), 0);
 
-  // ── Search filter + slice ── NEW
   const filteredJobs = jobs.filter((j) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -181,7 +183,14 @@ export default function RecruiterDashboard() {
       j.workMode?.toLowerCase().includes(q)
     );
   });
-  const recentJobs = searchQuery ? filteredJobs : jobs.slice(0, 5);
+
+  const totalPages = Math.ceil(filteredJobs.length / PAGE_SIZE);
+  const pagedJobs = filteredJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleSearch = (val) => {
+    setSearchQuery(val);
+    setPage(1);
+  };
 
   const fmt = (d) =>
     d
@@ -230,7 +239,7 @@ export default function RecruiterDashboard() {
             iconColor="text-green-500"
             trendColor="text-green-400"
             label="Total Applications"
-            value={loading ? "—" : totalApplications || 128}
+            value={loading ? "—" : totalApplications}
             sub="18 new this week"
             subColor="text-green-500"
           />
@@ -251,11 +260,10 @@ export default function RecruiterDashboard() {
           {/* ── Table Header with Search ── */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 gap-3">
             <h2 className="text-base sm:text-lg font-bold text-gray-900 shrink-0">
-              Recent Job Postings
+              Job Postings
             </h2>
 
             <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-              {/* Search input */}
               <div className="relative flex-1 sm:w-56 md:w-64">
                 <Search
                   size={14}
@@ -264,31 +272,19 @@ export default function RecruiterDashboard() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search by job title..."
                   className="w-full pl-8 pr-8 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all placeholder-gray-400"
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery("")}
+                    onClick={() => handleSearch("")}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     <X size={13} />
                   </button>
                 )}
               </div>
-
-              {/* View All Jobs button */}
-              <Link
-                to="/manage-jobs"
-                className="group inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 text-xs sm:text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all duration-200 whitespace-nowrap shrink-0"
-              >
-                View All Jobs
-                <ArrowRight
-                  size={14}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
-              </Link>
             </div>
           </div>
 
@@ -404,7 +400,7 @@ export default function RecruiterDashboard() {
 
                 {/* Job rows */}
                 {!loading &&
-                  recentJobs.map((job) => (
+                  pagedJobs.map((job) => (
                     <tr
                       key={job.id}
                       className="group transition-all duration-200 hover:bg-gray-50 hover:shadow-sm"
@@ -419,7 +415,7 @@ export default function RecruiterDashboard() {
                         </p>
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-gray-700">
-                        {job.applications ?? "—"}
+                        {job.applicationCount ?? 0}
                       </td>
                       <td className="px-4 sm:px-6 py-3 sm:py-4">
                         <StatusBadge status={job.status || "Active"} />
@@ -439,15 +435,50 @@ export default function RecruiterDashboard() {
             </table>
           </div>
 
-          {/* View all footer */}
-          {!loading && recentJobs.length > 0 && (
-            <div className="border-t border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex justify-center">
-              <Link
-                to="/manage-jobs"
-                className="flex items-center gap-2 text-xs sm:text-sm text-blue-600 font-semibold hover:gap-3 transition-all duration-200"
-              >
-                View All Jobs <ArrowRight size={14} className="sm:w-4 sm:h-4" />
-              </Link>
+          {/* Pagination */}
+          {!loading && totalPages > 1 && (
+            <div className="border-t border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+              <p className="text-xs sm:text-sm text-gray-500">
+                Showing{" "}
+                <span className="font-semibold text-gray-700">
+                  {(page - 1) * PAGE_SIZE + 1}–
+                  {Math.min(page * PAGE_SIZE, filteredJobs.length)}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-gray-700">
+                  {filteredJobs.length}
+                </span>{" "}
+                jobs
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    className={`w-8 h-8 rounded-lg text-xs sm:text-sm font-semibold transition ${
+                      n === page
+                        ? "bg-blue-600 text-white"
+                        : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
           )}
         </div>
