@@ -4,6 +4,7 @@ import com.jobmatcher.jobmatcher_backend.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -28,4 +29,8 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
     private Set<Skill> skills;
+
+    private String resumeUrl;
+    private String resumeFileName;
+    private LocalDateTime resumeUploadedAt;
 }
