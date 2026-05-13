@@ -12,14 +12,19 @@ import java.nio.file.Paths;
 public class FileStorageConfig implements WebMvcConfigurer {
 
     @Value("${file.upload-dir:uploads/resumes}")
-    private String uploadDir;
+    private String resumeUploadDir;
+
+    @Value("${file.profile-image-dir:uploads/profile-images}")
+    private String profileImageUploadDir;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        String resourceLocation = "file:" + uploadPath + "/";
-
+        Path resumePath = Paths.get(resumeUploadDir).toAbsolutePath().normalize();
         registry.addResourceHandler("/uploads/resumes/**")
-                .addResourceLocations(resourceLocation);
+                .addResourceLocations("file:" + resumePath + "/");
+
+        Path profileImagePath = Paths.get(profileImageUploadDir).toAbsolutePath().normalize();
+        registry.addResourceHandler("/uploads/profile-images/**")
+                .addResourceLocations("file:" + profileImagePath + "/");
     }
 }

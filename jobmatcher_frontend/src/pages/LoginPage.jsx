@@ -48,10 +48,9 @@ export default function Login() {
 
       const role = res.data.role;
 
-      navigate(
-        role === "RECRUITER" ? "/recruiter-dashboard" : "/find-jobs",
-        { replace: true },
-      );
+      navigate(role === "RECRUITER" ? "/recruiter-dashboard" : "/find-jobs", {
+        replace: true,
+      });
     } catch (err) {
       setServerError(
         err.response?.data?.message ||

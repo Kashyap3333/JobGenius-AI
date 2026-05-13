@@ -33,4 +33,14 @@ public class User {
     private String resumeUrl;
     private String resumeFileName;
     private LocalDateTime resumeUploadedAt;
+
+    private String phone;
+    private String location;
+    private String education;
+
+    @Column(columnDefinition = "TEXT")
+    private String aboutMe;
+
+    private String profileImageUrl;
+    private String profileImageFileName;
 }

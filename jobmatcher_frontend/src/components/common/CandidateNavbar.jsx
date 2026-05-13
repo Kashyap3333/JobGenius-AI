@@ -1,6 +1,6 @@
 // src/components/common/CandidateNavbar.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
@@ -13,16 +13,24 @@ import {
   Settings,
 } from "lucide-react";
 import logo from "../../assets/Images/Horizontal_NOBG_Logo.png";
+import API from "../../services/api";
 
 export default function CandidateNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const name = user?.name || user?.username || "Candidate";
+  const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const name = storedUser?.username || storedUser?.name || "Candidate";
   const initial = name.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    API.get("/users/me")
+      .then((res) => setProfileImageUrl(res.data.profileImageUrl || null))
+      .catch(() => {});
+  }, []);
 
   const navLinks = [
     { to: "/find-jobs", label: "Find Jobs", icon: Search },
@@ -93,9 +101,17 @@ export default function CandidateNavbar() {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 h-9 px-2.5 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
             >
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                {initial}
-              </div>
+              {profileImageUrl ? (
+                <img
+                  src={profileImageUrl}
+                  alt="Profile"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-gray-200 shrink-0"
+                />
+              ) : (
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {initial}
+                </div>
+              )}
               <div className="hidden md:block text-left">
                 <p className="text-xs font-medium text-gray-800 leading-tight">
                   {name}

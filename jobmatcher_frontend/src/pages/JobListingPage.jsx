@@ -245,7 +245,7 @@ function SalaryDropdown({ value, onChange }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm border rounded-xl bg-white transition-all
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm border rounded-xl bg-white transition-all cursor-pointer
           ${open ? "border-blue-500 ring-2 ring-blue-100" : "border-gray-200 hover:border-gray-300"}`}
       >
         <span
@@ -304,7 +304,7 @@ function SortDropdown({ value, onChange }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all font-medium text-gray-700 whitespace-nowrap"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all font-medium text-gray-700 whitespace-nowrap cursor-pointer"
       >
         {value}
         <ChevronDown
@@ -496,7 +496,7 @@ function JobCard({
                   e.stopPropagation();
                   onSave(job.id);
                 }}
-                className={`p-1.5 rounded-lg transition-all ${saved ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"}`}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${saved ? "text-blue-600 bg-blue-50" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"}`}
               >
                 {saved ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
               </button>
@@ -532,7 +532,7 @@ function JobCard({
                   e.stopPropagation();
                   onApply(job);
                 }}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm whitespace-nowrap"
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all shadow-sm whitespace-nowrap cursor-pointer"
               >
                 Apply Now
               </button>
@@ -556,7 +556,7 @@ function JobCard({
                 e.stopPropagation();
                 onApply(job);
               }}
-              className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+              className="px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
             >
               Apply Now
             </button>
@@ -813,7 +813,7 @@ export default function JobListingPage() {
         </h3>
         <button
           onClick={clearAll}
-          className="text-xs text-blue-600 hover:underline font-medium"
+          className="text-xs text-blue-600 hover:underline font-medium cursor-pointer"
         >
           Clear all
         </button>
@@ -881,7 +881,7 @@ export default function JobListingPage() {
         {allSkills.length > 6 && (
           <button
             onClick={() => setShowMoreSkills(!showMoreSkills)}
-            className="flex items-center gap-1 text-xs text-blue-600 font-medium mt-1.5 hover:underline"
+            className="flex items-center gap-1 text-xs text-blue-600 font-medium mt-1.5 hover:underline cursor-pointer"
           >
             {showMoreSkills
               ? "Show less"
@@ -931,8 +931,8 @@ export default function JobListingPage() {
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
       {/* ── Hero banner ── */}
-      <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 overflow-hidden">
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full pointer-events-none" />
+      <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600">
+        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full pointer-events-none overflow-hidden" />
         <div className="absolute top-6 right-32 w-24 h-24 bg-white/5 rounded-full pointer-events-none" />
 
         <div className="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 pt-7 sm:pt-10 pb-0">
@@ -1004,7 +1004,7 @@ export default function JobListingPage() {
             {/* CTA */}
             <button
               onClick={() => setPage(1)}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all whitespace-nowrap shrink-0"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.97] transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
               <Search size={14} /> Search Jobs
             </button>
@@ -1027,7 +1027,7 @@ export default function JobListingPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setMobileSidebarOpen(true)}
-                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-all text-gray-700 font-medium"
+                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-all text-gray-700 font-medium cursor-pointer"
                 >
                   <SlidersHorizontal size={13} /> Filters
                 </button>
@@ -1049,7 +1049,7 @@ export default function JobListingPage() {
                 <button
                   onClick={fetchJobs}
                   title="Refresh"
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
                 >
                   <RefreshCw size={13} />
                 </button>
@@ -1060,13 +1060,13 @@ export default function JobListingPage() {
                 <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white">
                   <button
                     onClick={() => setViewMode("grid")}
-                    className={`p-2 transition-colors ${viewMode === "grid" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-50"}`}
+                    className={`p-2 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     <LayoutGrid size={14} />
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`p-2 transition-colors ${viewMode === "list" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-50"}`}
+                    className={`p-2 transition-colors cursor-pointer ${viewMode === "list" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-50"}`}
                   >
                     <List size={14} />
                   </button>
@@ -1089,7 +1089,7 @@ export default function JobListingPage() {
                 </div>
                 <button
                   onClick={fetchJobs}
-                  className="text-sm text-blue-600 hover:underline font-medium flex items-center gap-1"
+                  className="text-sm text-blue-600 hover:underline font-medium flex items-center gap-1 cursor-pointer"
                 >
                   <RefreshCw size={13} /> Try again
                 </button>
@@ -1102,7 +1102,7 @@ export default function JobListingPage() {
                 </p>
                 <button
                   onClick={clearAll}
-                  className="text-sm text-blue-600 hover:underline font-medium"
+                  className="text-sm text-blue-600 hover:underline font-medium cursor-pointer"
                 >
                   Clear filters
                 </button>
@@ -1137,7 +1137,7 @@ export default function JobListingPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safeP === 1}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -1150,7 +1150,7 @@ export default function JobListingPage() {
                     <button
                       key={p}
                       onClick={() => setPage(p)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${safeP === p ? "bg-blue-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all cursor-pointer ${safeP === p ? "bg-blue-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
                     >
                       {p}
                     </button>
@@ -1159,7 +1159,7 @@ export default function JobListingPage() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safeP === totalPages}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -1195,7 +1195,7 @@ export default function JobListingPage() {
               </div>
               <button
                 onClick={() => navigate("/profile")}
-                className="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1"
+                className="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
               >
                 Improve your profile <ArrowRight size={11} />
               </button>
@@ -1234,7 +1234,7 @@ export default function JobListingPage() {
                 </p>
                 <button
                   onClick={() => navigate("/my-applications")}
-                  className="text-xs text-blue-600 hover:underline font-medium"
+                  className="text-xs text-blue-600 hover:underline font-medium cursor-pointer"
                 >
                   View all
                 </button>
@@ -1323,7 +1323,7 @@ export default function JobListingPage() {
               <h3 className="text-sm font-bold text-gray-900">Filters</h3>
               <button
                 onClick={() => setMobileSidebarOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <X size={16} className="text-gray-600" />
               </button>
@@ -1331,7 +1331,7 @@ export default function JobListingPage() {
             {SidebarContent}
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="w-full mt-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+              className="w-full mt-5 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer"
             >
               Apply Filters
             </button>
