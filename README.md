@@ -168,6 +168,7 @@ http://localhost:8080/api
 | GET    | `/applications/check/{jobId}`          | Check if already applied  | Candidate     |
 
 ### Apply for Job — Request Body (optional)
+
 ```json
 {
   "coverLetter": "string",
@@ -176,20 +177,22 @@ http://localhost:8080/api
 ```
 
 ### Application Response Fields
-| Field                  | Type   | Description                            |
-| ---------------------- | ------ | -------------------------------------- |
-| id                     | Long   | Application ID                         |
-| jobId                  | Long   | Job ID                                 |
-| jobTitle               | String | Job title                              |
-| companyName            | String | Company name                           |
+
+| Field                  | Type   | Description                                           |
+| ---------------------- | ------ | ----------------------------------------------------- |
+| id                     | Long   | Application ID                                        |
+| jobId                  | Long   | Job ID                                                |
+| jobTitle               | String | Job title                                             |
+| companyName            | String | Company name                                          |
 | status                 | String | APPLIED / SCREENING / INTERVIEW / ACCEPTED / REJECTED |
-| appliedAt              | String | Application timestamp                  |
-| coverLetter            | String | Cover letter text                      |
-| selectedResumeId       | Long   | ID of resume submitted with application |
-| selectedResumeFileName | String | Filename of submitted resume           |
-| selectedResumeUrl      | String | URL to preview/download submitted resume |
+| appliedAt              | String | Application timestamp                                 |
+| coverLetter            | String | Cover letter text                                     |
+| selectedResumeId       | Long   | ID of resume submitted with application               |
+| selectedResumeFileName | String | Filename of submitted resume                          |
+| selectedResumeUrl      | String | URL to preview/download submitted resume              |
 
 ### Check Applied — Response
+
 ```json
 {
   "applied": true,
@@ -227,17 +230,19 @@ http://localhost:8080/api
 
 ## Resume `/resume`
 
-| Method | Endpoint                      | Description                  | Auth Required |
-| ------ | ----------------------------- | ---------------------------- | ------------- |
-| POST   | `/resume/upload`              | Upload a resume file         | Candidate     |
-| GET    | `/resume/my`                  | Get all resumes of current user | Candidate  |
-| DELETE | `/resume/{resumeId}`          | Delete a resume              | Candidate     |
-| PUT    | `/resume/{resumeId}/primary`  | Set resume as primary        | Candidate     |
+| Method | Endpoint                     | Description                     | Auth Required |
+| ------ | ---------------------------- | ------------------------------- | ------------- |
+| POST   | `/resume/upload`             | Upload a resume file            | Candidate     |
+| GET    | `/resume/my`                 | Get all resumes of current user | Candidate     |
+| DELETE | `/resume/{resumeId}`         | Delete a resume                 | Candidate     |
+| PUT    | `/resume/{resumeId}/primary` | Set resume as primary           | Candidate     |
 
 ### Resume Upload Request
+
 `multipart/form-data` with field `file` (PDF/DOC/DOCX, max 5 MB)
 
 ### Resume Response Fields
+
 | Field            | Type    | Description                        |
 | ---------------- | ------- | ---------------------------------- |
 | id               | Long    | Resume ID                          |
@@ -272,26 +277,26 @@ http://localhost:8080/api
 
 # Candidate Pages (under `CandidateLayout`)
 
-| Page                                         | Purpose                       | APIs Used                                                                      | Key Features                                                                           |
-| -------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| JobListingPage `/find-jobs`                  | Browse all jobs               | `GET /jobs`                                                                    | Search, filter by job type/work mode, grid/list toggle, pagination, bookmarks, match % |
-| JobDetailPage `/jobs/:id`                    | View full job details + apply | `GET /jobs/:id`, `POST /applications/:jobId`, `GET /applications/check/:jobId`, `GET /resume/my` | Match ring, resume selection modal (with local upload), apply/withdraw, expiry warning |
-| MyApplicationsPage `/my-applications`        | Track applied jobs            | `GET /applications/my`, `DELETE /applications/:id`                             | Status badges, resume column (filename + preview), withdraw application                |
-| SkillManagementPage `/skill-management`      | Add/remove personal skills    | `GET /skills/user`, `POST /skills`, `DELETE /skills/:id`                       | Skill strength indicator, tag-style UI                                                 |
-| SkillGapPage `/skill-gap/:jobId`             | Analyze skill gap for a job   | `GET /jobmatch/match`                                                          | Matched vs missing skills, salary info, job match score                                |
-| CandidateProfilePage `/profile`              | Manage candidate profile      | `GET /users/me`, `PUT /users/me`, `GET /resume/my`, `POST /resume/upload`, `DELETE /resume/:id`, `PUT /resume/:id/primary` | Personal info, resume upload/preview/delete, set primary, profile completion, activity summary |
+| Page                                    | Purpose                       | APIs Used                                                                                                                  | Key Features                                                                                   |
+| --------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| JobListingPage `/find-jobs`             | Browse all jobs               | `GET /jobs`                                                                                                                | Search, filter by job type/work mode, grid/list toggle, pagination, bookmarks, match %         |
+| JobDetailPage `/jobs/:id`               | View full job details + apply | `GET /jobs/:id`, `POST /applications/:jobId`, `GET /applications/check/:jobId`, `GET /resume/my`                           | Match ring, resume selection modal (with local upload), apply/withdraw, expiry warning         |
+| MyApplicationsPage `/my-applications`   | Track applied jobs            | `GET /applications/my`, `DELETE /applications/:id`                                                                         | Status badges, resume column (filename + preview), withdraw application                        |
+| SkillManagementPage `/skill-management` | Add/remove personal skills    | `GET /skills/user`, `POST /skills`, `DELETE /skills/:id`                                                                   | Skill strength indicator, tag-style UI                                                         |
+| SkillGapPage `/skill-gap/:jobId`        | Analyze skill gap for a job   | `GET /jobmatch/match`                                                                                                      | Matched vs missing skills, salary info, job match score                                        |
+| CandidateProfilePage `/profile`         | Manage candidate profile      | `GET /users/me`, `PUT /users/me`, `GET /resume/my`, `POST /resume/upload`, `DELETE /resume/:id`, `PUT /resume/:id/primary` | Personal info, resume upload/preview/delete, set primary, profile completion, activity summary |
 
 ---
 
 # Recruiter Pages (under `RecruiterLayout`)
 
-| Page                                      | Purpose                  | APIs Used                                                     | Key Features                                                        |
-| ----------------------------------------- | ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------- |
-| RecruiterDashboard `/recruiter-dashboard`       | Overview stats                | `GET /jobs/recruiter`, applications data                               | Stat cards (total jobs, applications), status breakdown                                    |
-| ManageJobPage `/manage-jobs`                    | View/manage posted jobs       | `GET /jobs/recruiter`, `DELETE /jobs/:id`                              | Search, filter by type/mode/status, pagination, edit/delete actions                        |
-| PostJobPage `/post-job`                         | Create a new job posting      | `POST /jobs`, `GET /enums/job-types`, `GET /enums/work-modes`          | Full form with skills, salary, type, work mode                                             |
-| EditJobPage `/edit-job/:id`                     | Edit existing job             | `GET /jobs/:id`, `PUT /jobs/:id`                                       | Pre-filled form, same fields as PostJob                                                    |
-| JobApplicantsPage `/applicants/:jobId`          | View all applicants for a job | `GET /applications/job/:jobId`, `PUT /applications/:id/status`         | Applicant table with status update dropdown, resume filename + preview + download per row  |
+| Page                                      | Purpose                       | APIs Used                                                      | Key Features                                                                              |
+| ----------------------------------------- | ----------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| RecruiterDashboard `/recruiter-dashboard` | Overview stats                | `GET /jobs/recruiter`, applications data                       | Stat cards (total jobs, applications), status breakdown                                   |
+| ManageJobPage `/manage-jobs`              | View/manage posted jobs       | `GET /jobs/recruiter`, `DELETE /jobs/:id`                      | Search, filter by type/mode/status, pagination, edit/delete actions                       |
+| PostJobPage `/post-job`                   | Create a new job posting      | `POST /jobs`, `GET /enums/job-types`, `GET /enums/work-modes`  | Full form with skills, salary, type, work mode                                            |
+| EditJobPage `/edit-job/:id`               | Edit existing job             | `GET /jobs/:id`, `PUT /jobs/:id`                               | Pre-filled form, same fields as PostJob                                                   |
+| JobApplicantsPage `/applicants/:jobId`    | View all applicants for a job | `GET /applications/job/:jobId`, `PUT /applications/:id/status` | Applicant table with status update dropdown, resume filename + preview + download per row |
 
 ---
 
@@ -343,7 +348,6 @@ user_skills
 jobs
 job_skills
 applications
-resumes
 
 ## System Architecture
 
