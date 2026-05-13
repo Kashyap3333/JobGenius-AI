@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/resume")
 public class ResumeController {
@@ -23,24 +25,34 @@ public class ResumeController {
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
 
-        String candidateEmail = authentication.getName();
-        ResumeResponse response = resumeService.uploadResume(file, candidateEmail);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @GetMapping("/{candidateId}")
-    public ResponseEntity<ResumeResponse> getResume(@PathVariable Long candidateId) {
-        return new ResponseEntity<>(resumeService.getResume(candidateId), HttpStatus.OK);
+        ResumeResponse response = resumeService.uploadResume(file, authentication.getName());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('CANDIDATE')")
-    @DeleteMapping("/{candidateId}")
-    public ResponseEntity<String> deleteResume(
-            @PathVariable Long candidateId,
+    @GetMapping("/my")
+    public ResponseEntity<List<ResumeResponse>> getMyResumes(Authentication authentication) {
+        List<ResumeResponse> resumes = resumeService.getMyResumes(authentication.getName());
+        return ResponseEntity.ok(resumes);
+    }
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @PutMapping("/{resumeId}/primary")
+    public ResponseEntity<ResumeResponse> setPrimary(
+            @PathVariable Long resumeId,
             Authentication authentication) {
 
-        String candidateEmail = authentication.getName();
-        resumeService.deleteResume(candidateId, candidateEmail);
-        return new ResponseEntity<>("Resume deleted successfully", HttpStatus.OK);
+        ResumeResponse response = resumeService.setPrimary(resumeId, authentication.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @DeleteMapping("/{resumeId}")
+    public ResponseEntity<String> deleteResume(
+            @PathVariable Long resumeId,
+            Authentication authentication) {
+
+        resumeService.deleteResume(resumeId, authentication.getName());
+        return ResponseEntity.ok("Resume deleted successfully");
     }
 }

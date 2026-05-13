@@ -19,6 +19,7 @@ import {
   Download,
   RefreshCw,
   Trash2,
+  Star,
   Shield,
   Upload,
   TrendingUp,
@@ -94,13 +95,14 @@ export default function CandidateProfilePage() {
   const profileImageInputRef = useRef(null);
 
   const [user, setUser] = useState(null);
-  const [resume, setResume] = useState(null);
+  const [resumes, setResumes] = useState([]);
   const [skills, setSkills] = useState([]);
   const [applications, setApplications] = useState([]);
 
   const [loadingUser, setLoadingUser] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [resumeActionLoading, setResumeActionLoading] = useState(null);
+  const [replaceTargetId, setReplaceTargetId] = useState(null);
   const [dragOver, setDragOver] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -148,18 +150,11 @@ export default function CandidateProfilePage() {
         if (appsRes.status === "fulfilled")
           setApplications(appsRes.value.data || []);
 
-        // Resume fetch needs candidateId — derive it from API response if localStorage is stale
-        const resolvedId =
-          candidateId ||
-          (userRes.status === "fulfilled" ? userRes.value.data?.id : null);
-
-        if (resolvedId) {
-          try {
-            const resumeRes = await API.get(`/resume/${resolvedId}`);
-            setResume(resumeRes.data);
-          } catch {
-            setResume(null);
-          }
+        try {
+          const resumeRes = await API.get("/resume/my");
+          setResumes(resumeRes.data || []);
+        } catch {
+          setResumes([]);
         }
       } finally {
         setLoadingUser(false);
@@ -175,9 +170,23 @@ export default function CandidateProfilePage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── Upload handler ─────────────────────────────────────────
+  // ── Resume helpers ─────────────────────────────────────────
+  const refreshResumes = async () => {
+    try {
+      const res = await API.get("/resume/my");
+      setResumes(res.data || []);
+    } catch {
+      setResumes([]);
+    }
+  };
+
   const handleFileUpload = async (file) => {
     if (!file) return;
+
+    if (resumes.length >= 3) {
+      showToast("Maximum 3 resumes allowed. Delete one first.", "error");
+      return;
+    }
 
     const allowed = [
       "application/pdf",
@@ -198,30 +207,89 @@ export default function CandidateProfilePage() {
 
     setUploadLoading(true);
     try {
-      const res = await API.post("/resume/upload", formData, {
+      await API.post("/resume/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setResume(res.data);
+      await refreshResumes();
       showToast("Resume uploaded successfully!");
     } catch (err) {
       showToast(err?.response?.data || "Upload failed. Try again.", "error");
     } finally {
       setUploadLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  // ── Delete handler ─────────────────────────────────────────
-  const handleDelete = async () => {
-    if (!window.confirm("Delete your resume?")) return;
-    setDeleteLoading(true);
+  const handleSetPrimary = async (resumeId) => {
+    setResumeActionLoading(resumeId);
     try {
-      await API.delete(`/resume/${candidateId}`);
-      setResume(null);
+      await API.put(`/resume/${resumeId}/primary`);
+      await refreshResumes();
+      showToast("Primary resume updated!");
+    } catch (err) {
+      showToast(err?.response?.data || "Failed to update primary resume.", "error");
+    } finally {
+      setResumeActionLoading(null);
+    }
+  };
+
+  const handleDeleteResume = async (resumeId) => {
+    if (!window.confirm("Delete this resume?")) return;
+    setResumeActionLoading(resumeId + "-del");
+    try {
+      await API.delete(`/resume/${resumeId}`);
+      await refreshResumes();
       showToast("Resume deleted.");
     } catch (err) {
       showToast(err?.response?.data || "Delete failed.", "error");
     } finally {
-      setDeleteLoading(false);
+      setResumeActionLoading(null);
+    }
+  };
+
+  const handleReplaceResume = async (file) => {
+    if (!file || !replaceTargetId) return;
+
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (!allowed.includes(file.type)) {
+      showToast("Only PDF, DOC, DOCX files are allowed.", "error");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("File size must be under 5MB.", "error");
+      return;
+    }
+
+    const wasPrimary = resumes.find((r) => r.id === replaceTargetId)?.primary;
+    const targetId = replaceTargetId;
+    setReplaceTargetId(null);
+    setResumeActionLoading(targetId + "-replace");
+
+    try {
+      await API.delete(`/resume/${targetId}`);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await API.post("/resume/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (wasPrimary && res.data?.id) {
+        await API.put(`/resume/${res.data.id}/primary`);
+      }
+
+      await refreshResumes();
+      showToast("Resume replaced successfully!");
+    } catch (err) {
+      showToast(err?.response?.data || "Replace failed.", "error");
+      await refreshResumes();
+    } finally {
+      setResumeActionLoading(null);
+      if (replaceInputRef.current) replaceInputRef.current.value = "";
     }
   };
 
@@ -365,7 +433,7 @@ export default function CandidateProfilePage() {
           !!user.location,
           !!user.education,
           !!user.aboutMe,
-          !!resume,
+          resumes.length > 0,
           skills.length > 0,
         ].filter(Boolean).length /
           8) *
@@ -536,165 +604,232 @@ export default function CandidateProfilePage() {
           </div>
 
           {/* Resume */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText size={16} className="text-gray-500" />
-              <h2 className="text-sm font-bold text-gray-900">Resume</h2>
-            </div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-              {/* Drop zone */}
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`flex-1 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 py-7 px-4 cursor-pointer transition-all
-                    ${dragOver ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"}`}
-              >
-                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                  {uploadLoading ? (
-                    <Loader2 size={20} className="text-blue-500 animate-spin" />
-                  ) : (
-                    <Upload size={20} className="text-blue-500" />
-                  )}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            {/* Section header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <FileText size={14} className="text-blue-600" />
                 </div>
-                <p className="text-sm text-gray-600 font-medium text-center">
-                  Drag &amp; drop your resume here
-                </p>
-                <p className="text-xs text-gray-400">or</p>
+                <h2 className="text-sm font-bold text-gray-900">My Resumes</h2>
+                <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full
+                  ${resumes.length >= 3 ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-500"}`}>
+                  {resumes.length} / 3
+                </span>
+              </div>
+              {resumes.length < 3 && (
                 <button
                   disabled={uploadLoading}
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all disabled:opacity-60 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold transition-all disabled:opacity-60 cursor-pointer shadow-sm"
                 >
-                  {uploadLoading ? "Uploading..." : "Upload New Resume"}
+                  {uploadLoading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  {uploadLoading ? "Uploading..." : "Upload Resume"}
                 </button>
-                <p className="text-[11px] text-gray-400 mt-1">
-                  PDF, DOC, DOCX (Max. 5MB)
-                </p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={(e) => handleFileUpload(e.target.files?.[0])}
-                />
-              </div>
+              )}
+              {/* Hidden inputs */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={(e) => handleFileUpload(e.target.files?.[0])}
+              />
+              <input
+                ref={replaceInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={(e) => handleReplaceResume(e.target.files?.[0])}
+              />
+            </div>
 
-              {/* Current resume */}
-              <div className="flex-1 flex flex-col gap-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Current Resume
-                </p>
-
-                {resume ? (
-                  <>
-                    {/* File card */}
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-12 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                        <span className="text-[10px] font-bold text-red-600">
-                          {resume.resumeFileName
-                            ?.split(".")
-                            .pop()
-                            .toUpperCase() || "PDF"}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900 break-all">
-                          {resume.resumeFileName}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          Uploaded on{" "}
-                          {resume.resumeUploadedAt
-                            ? new Date(
-                                resume.resumeUploadedAt,
-                              ).toLocaleDateString("en-IN", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })
-                            : "—"}
-                        </p>
-                        <span className="inline-block mt-1.5 px-2.5 py-0.5 bg-green-100 text-green-700 text-[11px] font-semibold rounded-full">
-                          Active
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                      <a
-                        href={resume.resumeUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-semibold transition-all cursor-pointer"
-                      >
-                        <Eye size={13} /> Preview
-                      </a>
-                      <a
-                        href={resume.resumeUrl}
-                        download={resume.resumeFileName}
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-semibold transition-all cursor-pointer"
-                      >
-                        <Download size={13} /> Download
-                      </a>
-                      <button
-                        onClick={() => replaceInputRef.current?.click()}
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-semibold transition-all cursor-pointer"
-                      >
-                        <RefreshCw size={13} /> Replace
-                      </button>
-                      <button
-                        onClick={handleDelete}
-                        disabled={deleteLoading}
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-xs font-semibold transition-all disabled:opacity-60 cursor-pointer"
-                      >
-                        {deleteLoading ? (
-                          <Loader2 size={13} className="animate-spin" />
-                        ) : (
-                          <Trash2 size={13} />
-                        )}
-                        Delete
-                      </button>
-
-                      {/* Hidden replace input */}
-                      <input
-                        ref={replaceInputRef}
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e.target.files?.[0])}
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-6 gap-2 text-center">
-                    <FileText size={28} className="text-gray-300" />
-                    <p className="text-sm text-gray-400 font-medium">
-                      No resume uploaded yet.
+            <div className="p-5">
+              {/* Empty state */}
+              {resumes.length === 0 && (
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 py-12 px-6 cursor-pointer transition-all
+                    ${dragOver ? "border-blue-400 bg-blue-50" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50/80"}`}
+                >
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors
+                    ${dragOver ? "bg-blue-100" : "bg-gray-100"}`}>
+                    {uploadLoading
+                      ? <Loader2 size={24} className="text-blue-500 animate-spin" />
+                      : <Upload size={24} className={dragOver ? "text-blue-500" : "text-gray-400"} />}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-gray-700">
+                      {dragOver ? "Drop to upload" : "Upload your resume"}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      Upload your resume to apply for jobs.
+                    <p className="text-xs text-gray-400 mt-1">
+                      Drag &amp; drop or click to browse · PDF, DOC, DOCX · Max 5MB
                     </p>
                   </div>
-                )}
-
-                {/* Info banner */}
-                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-3">
-                  <Shield size={14} className="text-blue-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    Your resume is visible to recruiters when you apply to jobs.{" "}
-                    <span className="font-semibold">
-                      Keep your resume updated for better match results.
-                    </span>
-                  </p>
+                  <span className="px-4 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                    Browse Files
+                  </span>
                 </div>
+              )}
+
+              {/* Resume cards */}
+              {resumes.length > 0 && (
+                <div className="flex flex-col gap-3">
+                  {[...resumes].sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0)).map((r, idx) => {
+                    const ext = r.originalFileName?.split(".").pop().toUpperCase() || "PDF";
+                    const isPrimary = r.primary;
+                    const isReplacing = resumeActionLoading === r.id + "-replace";
+                    const isDeleting = resumeActionLoading === r.id + "-del";
+                    const isSettingPrimary = resumeActionLoading === r.id;
+                    const isAnyLoading = isReplacing || isDeleting || isSettingPrimary;
+
+                    const extColor = ext === "PDF"
+                      ? { bg: "bg-red-50", text: "text-red-500", border: "border-red-100" }
+                      : { bg: "bg-indigo-50", text: "text-indigo-500", border: "border-indigo-100" };
+
+                    return (
+                      <div
+                        key={r.id}
+                        className={`relative rounded-xl border transition-all overflow-hidden
+                          ${isPrimary
+                            ? "border-blue-200 bg-linear-to-r from-blue-50/80 to-white shadow-sm"
+                            : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"}`}
+                      >
+                        {/* Primary left accent bar */}
+                        {isPrimary && (
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-xl" />
+                        )}
+
+                        <div className="flex items-center gap-3.5 px-4 py-3.5 pl-5">
+                          {/* File type badge */}
+                          <div className={`w-11 h-13 rounded-xl border flex flex-col items-center justify-center shrink-0 py-2 px-1.5 gap-0.5
+                            ${extColor.bg} ${extColor.border}`}>
+                            <FileText size={14} className={extColor.text} />
+                            <span className={`text-[9px] font-black tracking-wide ${extColor.text}`}>{ext}</span>
+                          </div>
+
+                          {/* File info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-semibold text-gray-900 truncate max-w-65" title={r.originalFileName}>
+                                {r.originalFileName}
+                              </p>
+                              {isPrimary && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full shrink-0">
+                                  <Star size={8} fill="white" />
+                                  PRIMARY
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              Uploaded{" "}
+                              {r.uploadedAt
+                                ? new Date(r.uploadedAt).toLocaleDateString("en-IN", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "—"}
+                            </p>
+                          </div>
+
+                          {/* Action buttons — right side */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <a
+                              href={r.resumeUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              title="Preview"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
+                            >
+                              <Eye size={13} />
+                            </a>
+                            <a
+                              href={r.resumeUrl}
+                              download={r.originalFileName}
+                              title="Download"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-green-300 hover:text-green-600 hover:bg-green-50 transition-all cursor-pointer"
+                            >
+                              <Download size={13} />
+                            </a>
+                            <button
+                              title="Replace"
+                              disabled={isAnyLoading}
+                              onClick={() => {
+                                setReplaceTargetId(r.id);
+                                setTimeout(() => replaceInputRef.current?.click(), 0);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-amber-300 hover:text-amber-600 hover:bg-amber-50 transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                              {isReplacing
+                                ? <Loader2 size={13} className="animate-spin" />
+                                : <RefreshCw size={13} />}
+                            </button>
+                            {!isPrimary && (
+                              <button
+                                title="Set as Primary"
+                                disabled={isAnyLoading}
+                                onClick={() => handleSetPrimary(r.id)}
+                                className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-50 cursor-pointer"
+                              >
+                                {isSettingPrimary
+                                  ? <Loader2 size={13} className="animate-spin" />
+                                  : <Star size={13} />}
+                              </button>
+                            )}
+                            <button
+                              title="Delete"
+                              disabled={isAnyLoading}
+                              onClick={() => handleDeleteResume(r.id)}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                              {isDeleting
+                                ? <Loader2 size={13} className="animate-spin" />
+                                : <Trash2 size={13} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Loading overlay bar */}
+                        {isAnyLoading && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100 overflow-hidden">
+                            <div className="h-full bg-blue-400 animate-pulse w-full" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Add another — inline drop zone */}
+                  {resumes.length < 3 && (
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-xl flex items-center justify-center gap-2 py-3.5 cursor-pointer transition-all text-xs font-semibold
+                        ${dragOver
+                          ? "border-blue-400 bg-blue-50 text-blue-600"
+                          : "border-gray-200 text-gray-400 hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-500"}`}
+                    >
+                      {uploadLoading
+                        ? <><Loader2 size={13} className="animate-spin" /> Uploading...</>
+                        : <><Upload size={13} /> Add another resume</>}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Info footer */}
+              <div className="flex items-start gap-2.5 bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-2.5 mt-4">
+                <Star size={13} className="text-blue-500 shrink-0 mt-0.5" fill="currentColor" />
+                <p className="text-[11px] text-gray-500 leading-relaxed">
+                  Your <span className="font-semibold text-gray-700">Primary</span> resume is shared with recruiters when you apply.
+                  Upload up to 3 versions and swap primary anytime.
+                </p>
               </div>
             </div>
           </div>

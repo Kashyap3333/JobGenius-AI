@@ -1,12 +1,15 @@
 package com.jobmatcher.jobmatcher_backend.service.impl;
 
 import com.jobmatcher.jobmatcher_backend.dto.ResumeResponse;
+import com.jobmatcher.jobmatcher_backend.model.Resume;
 import com.jobmatcher.jobmatcher_backend.model.User;
+import com.jobmatcher.jobmatcher_backend.repository.ResumeRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
 import com.jobmatcher.jobmatcher_backend.service.ResumeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -17,11 +20,13 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
-public class    ResumeServiceImpl implements ResumeService {
+public class ResumeServiceImpl implements ResumeService {
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final int MAX_RESUMES = 3;
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     private static final List<String> ALLOWED_CONTENT_TYPES = List.of(
             "application/pdf",
             "application/msword",
@@ -38,61 +43,98 @@ public class    ResumeServiceImpl implements ResumeService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ResumeRepository resumeRepository;
+
     @Override
+    @Transactional
     public ResumeResponse uploadResume(MultipartFile file, String candidateEmail) {
         validateFile(file);
 
         User candidate = userRepository.findByEmail(candidateEmail)
-                .orElseThrow(() -> new RuntimeException("Candidate not found with email: " + candidateEmail));
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
 
-        // Delete old resume file from disk if exists
-        if (candidate.getResumeFileName() != null) {
-            deleteFileFromDisk(candidate.getResumeFileName());
+        long count = resumeRepository.countByUser_Id(candidate.getId());
+        if (count >= MAX_RESUMES) {
+            throw new RuntimeException("Maximum of " + MAX_RESUMES + " resumes allowed. Please delete one before uploading.");
         }
 
-        String savedFileName = storeFile(file);
+        String originalFileName = file.getOriginalFilename();
+        String storedFileName = storeFile(file);
+        String resumeUrl = baseUrl + "/uploads/resumes/" + storedFileName;
 
-        candidate.setResumeFileName(savedFileName);
-        candidate.setResumeUrl(baseUrl + "/uploads/resumes/" + savedFileName);
-        candidate.setResumeUploadedAt(LocalDateTime.now());
+        Resume resume = new Resume();
+        resume.setUser(candidate);
+        resume.setOriginalFileName(originalFileName);
+        resume.setStoredFileName(storedFileName);
+        resume.setResumeUrl(resumeUrl);
+        resume.setPrimary(count == 0); // first upload becomes primary
+        resume.setUploadedAt(LocalDateTime.now());
 
-        userRepository.save(candidate);
-
-        return new ResumeResponse(candidate);
+        resumeRepository.save(resume);
+        return new ResumeResponse(resume);
     }
 
     @Override
-    public ResumeResponse getResume(Long candidateId) {
-        User candidate = userRepository.findById(candidateId)
-                .orElseThrow(() -> new RuntimeException("Candidate not found with id: " + candidateId));
+    public List<ResumeResponse> getMyResumes(String candidateEmail) {
+        User candidate = userRepository.findByEmail(candidateEmail)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
 
-        if (candidate.getResumeFileName() == null) {
-            throw new RuntimeException("No resume found for candidate with id: " + candidateId);
-        }
-
-        return new ResumeResponse(candidate);
+        return resumeRepository.findByUser_IdOrderByUploadedAtAsc(candidate.getId())
+                .stream()
+                .map(ResumeResponse::new)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteResume(Long candidateId, String candidateEmail) {
-        User candidate = userRepository.findById(candidateId)
-                .orElseThrow(() -> new RuntimeException("Candidate not found with id: " + candidateId));
+    @Transactional
+    public ResumeResponse setPrimary(Long resumeId, String candidateEmail) {
+        User candidate = userRepository.findByEmail(candidateEmail)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
 
-        if (!candidate.getEmail().equals(candidateEmail)) {
-            throw new RuntimeException("Unauthorized: You can only delete your own resume");
+        Resume target = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+        if (!target.getUser().getId().equals(candidate.getId())) {
+            throw new RuntimeException("Unauthorized: This resume does not belong to you");
         }
 
-        if (candidate.getResumeFileName() == null) {
-            throw new RuntimeException("No resume found for candidate with id: " + candidateId);
+        // Unset primary on all resumes for this user
+        List<Resume> allResumes = resumeRepository.findByUser_IdOrderByUploadedAtAsc(candidate.getId());
+        allResumes.forEach(r -> r.setPrimary(false));
+        resumeRepository.saveAll(allResumes);
+
+        target.setPrimary(true);
+        resumeRepository.save(target);
+
+        return new ResumeResponse(target);
+    }
+
+    @Override
+    @Transactional
+    public void deleteResume(Long resumeId, String candidateEmail) {
+        User candidate = userRepository.findByEmail(candidateEmail)
+                .orElseThrow(() -> new RuntimeException("Candidate not found"));
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new RuntimeException("Resume not found"));
+
+        if (!resume.getUser().getId().equals(candidate.getId())) {
+            throw new RuntimeException("Unauthorized: This resume does not belong to you");
         }
 
-        deleteFileFromDisk(candidate.getResumeFileName());
+        boolean wasPrimary = resume.isPrimary();
+        deleteFileFromDisk(resume.getStoredFileName());
+        resumeRepository.delete(resume);
 
-        candidate.setResumeFileName(null);
-        candidate.setResumeUrl(null);
-        candidate.setResumeUploadedAt(null);
-
-        userRepository.save(candidate);
+        // Promote the oldest remaining resume to primary if deleted one was primary
+        if (wasPrimary) {
+            List<Resume> remaining = resumeRepository.findByUser_IdOrderByUploadedAtAsc(candidate.getId());
+            if (!remaining.isEmpty()) {
+                remaining.get(0).setPrimary(true);
+                resumeRepository.save(remaining.get(0));
+            }
+        }
     }
 
     // ── Private helpers ────────────────────────────────────────
@@ -101,21 +143,17 @@ public class    ResumeServiceImpl implements ResumeService {
         if (file == null || file.isEmpty()) {
             throw new RuntimeException("File must not be empty");
         }
-
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new RuntimeException("File size exceeds maximum allowed limit of 5MB");
         }
-
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw new RuntimeException("Invalid file type. Only PDF, DOC, and DOCX files are allowed");
         }
-
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isBlank()) {
             throw new RuntimeException("File name must not be empty");
         }
-
         String lowerName = originalName.toLowerCase();
         boolean hasValidExtension = ALLOWED_EXTENSIONS.stream().anyMatch(lowerName::endsWith);
         if (!hasValidExtension) {
@@ -137,16 +175,16 @@ public class    ResumeServiceImpl implements ResumeService {
 
             return uniqueFileName;
         } catch (IOException ex) {
-            throw new RuntimeException("Failed to store file. Please try again: " + ex.getMessage());
+            throw new RuntimeException("Failed to store file: " + ex.getMessage());
         }
     }
 
-    private void deleteFileFromDisk(String fileName) {
+    private void deleteFileFromDisk(String storedFileName) {
         try {
-            Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(fileName);
+            Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(storedFileName);
             Files.deleteIfExists(filePath);
         } catch (IOException ex) {
-            // Log but don't block — old file cleanup is non-critical
+            // non-critical — log in production
         }
     }
 }

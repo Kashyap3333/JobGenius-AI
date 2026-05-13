@@ -1,28 +1,24 @@
 package com.jobmatcher.jobmatcher_backend.dto;
 
-import com.jobmatcher.jobmatcher_backend.model.User;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.jobmatcher.jobmatcher_backend.model.Resume;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
 public class ResumeResponse {
 
-    private Long candidateId;
-    private String candidateName;
-    private String resumeFileName;
-    private String resumeUrl;
-    private LocalDateTime resumeUploadedAt;
+    private final Long id;
+    private final String originalFileName;
+    private final String resumeUrl;
+    private final boolean primary;
+    private final LocalDateTime uploadedAt;
 
-    public ResumeResponse(User user) {
-        this.candidateId = user.getId();
-        this.candidateName = user.getUsername();
-        this.resumeFileName = user.getResumeFileName();
-        this.resumeUrl = user.getResumeUrl();
-        this.resumeUploadedAt = user.getResumeUploadedAt();
+    public ResumeResponse(Resume resume) {
+        this.id = resume.getId();
+        this.originalFileName = resume.getOriginalFileName();
+        this.resumeUrl = resume.getResumeUrl();
+        this.primary = resume.isPrimary();
+        this.uploadedAt = resume.getUploadedAt();
     }
 }
