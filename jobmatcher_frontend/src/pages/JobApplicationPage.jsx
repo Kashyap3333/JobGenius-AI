@@ -13,6 +13,9 @@ import {
   Mail,
   Calendar,
   X,
+  FileText,
+  Eye,
+  Download,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -407,15 +410,16 @@ export default function JobApplicantsPage() {
           <div className="overflow-x-auto rounded-2xl">
             <table
               className="w-full"
-              style={{ minWidth: "800px", tableLayout: "fixed" }}
+              style={{ minWidth: "960px", tableLayout: "fixed" }}
             >
               <colgroup>
                 <col style={{ width: "44px" }} />
-                <col style={{ width: "20%" }} />
-                <col style={{ width: "25%" }} />
-                <col style={{ width: "15%" }} />
-                <col style={{ width: "16%" }} />
                 <col style={{ width: "18%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "15%" }} />
               </colgroup>
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
@@ -425,6 +429,7 @@ export default function JobApplicantsPage() {
                     "Email",
                     "Applied On",
                     "Status",
+                    "Resume",
                     "Update Status",
                   ].map((h) => (
                     <th
@@ -483,6 +488,40 @@ export default function JobApplicantsPage() {
 
                     <td className="px-4 py-4">
                       <StatusBadge value={app.status} />
+                    </td>
+
+                    <td className="px-4 py-4">
+                      {app.selectedResumeFileName && app.selectedResumeUrl ? (
+                        <div className="flex flex-col gap-1.5 min-w-0">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="w-5 h-5 rounded bg-red-50 border border-red-100 flex items-center justify-center shrink-0">
+                              <FileText size={11} className="text-red-400" />
+                            </div>
+                            <span className="text-xs font-medium text-gray-700 truncate max-w-27.5" title={app.selectedResumeFileName}>
+                              {app.selectedResumeFileName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 pl-0.5">
+                            <a
+                              href={app.selectedResumeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 transition-colors cursor-pointer whitespace-nowrap"
+                            >
+                              <Eye size={10} /> Preview
+                            </a>
+                            <a
+                              href={app.selectedResumeUrl}
+                              download
+                              className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-100 transition-colors cursor-pointer whitespace-nowrap"
+                            >
+                              <Download size={10} /> Download
+                            </a>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-300">—</span>
+                      )}
                     </td>
 
                     <td className="px-4 py-4">

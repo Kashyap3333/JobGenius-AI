@@ -257,14 +257,18 @@ export default function ManageJobs() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const jobTypes = [
-    "FULL_TIME",
-    "PART_TIME",
-    "CONTRACT",
-    "INTERNSHIP",
-    "FREELANCE",
-  ];
-  const workModes = ["REMOTE", "HYBRID", "ON_SITE", "OFFICE"];
+  // Enums from API
+  const [jobTypes, setJobTypes] = useState([]);
+  const [workModes, setWorkModes] = useState([]);
+
+  useEffect(() => {
+    Promise.all([API.get("/enums/job-types"), API.get("/enums/work-modes")])
+      .then(([jtRes, wmRes]) => {
+        setJobTypes(jtRes.data || []);
+        setWorkModes(wmRes.data || []);
+      })
+      .catch(() => {});
+  }, []);
 
   // ── Fetch jobs ─────────────────────────────────────────────
   const fetchJobs = () => {
