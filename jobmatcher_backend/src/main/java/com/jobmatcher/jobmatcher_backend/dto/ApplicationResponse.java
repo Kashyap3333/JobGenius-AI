@@ -24,6 +24,9 @@ public class ApplicationResponse {
     private String status;
     private LocalDateTime appliedAt;
     private String coverLetter;
+    private Long selectedResumeId;
+    private String selectedResumeFileName;
+    private String selectedResumeUrl;
 
     public ApplicationResponse(Application application) {
         this.id = application.getId();
@@ -39,5 +42,10 @@ public class ApplicationResponse {
         this.status = application.getStatus().name();
         this.appliedAt = application.getAppliedAt();
         this.coverLetter = application.getCoverLetter();
+        if (application.getSelectedResume() != null) {
+            this.selectedResumeId = application.getSelectedResume().getId();
+            this.selectedResumeFileName = application.getSelectedResume().getOriginalFileName();
+            this.selectedResumeUrl = application.getSelectedResume().getResumeUrl();
+        }
     }
 }

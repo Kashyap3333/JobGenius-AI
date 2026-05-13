@@ -7,9 +7,11 @@ import com.jobmatcher.jobmatcher_backend.enums.ApplicationStatus;
 import com.jobmatcher.jobmatcher_backend.enums.RoleEnum;
 import com.jobmatcher.jobmatcher_backend.model.Application;
 import com.jobmatcher.jobmatcher_backend.model.Job;
+import com.jobmatcher.jobmatcher_backend.model.Resume;
 import com.jobmatcher.jobmatcher_backend.model.User;
 import com.jobmatcher.jobmatcher_backend.repository.ApplicationRepository;
 import com.jobmatcher.jobmatcher_backend.repository.JobRepository;
+import com.jobmatcher.jobmatcher_backend.repository.ResumeRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,9 @@ public class ApplicationService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ResumeRepository resumeRepository;
+
     public ApplicationResponse applyForJob(Long jobId, ApplicationRequest request, String candidateEmail) {
         User candidate = userRepository.findByEmail(candidateEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -53,6 +58,15 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.APPLIED);
         application.setAppliedAt(LocalDateTime.now());
         application.setCoverLetter(request != null ? request.getCoverLetter() : null);
+
+        if (request != null && request.getSelectedResumeId() != null) {
+            Resume resume = resumeRepository.findById(request.getSelectedResumeId())
+                    .orElseThrow(() -> new RuntimeException("Selected resume not found"));
+            if (!resume.getUser().getId().equals(candidate.getId())) {
+                throw new RuntimeException("Selected resume does not belong to you");
+            }
+            application.setSelectedResume(resume);
+        }
 
         return new ApplicationResponse(applicationRepository.save(application));
     }
@@ -124,6 +138,13 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return applicationRepository.findByCandidateIdAndJobId(candidate.getId(), jobId)
                 .map(Application::getId)
+                .orElse(null);
+    }
+
+    public Application getApplication(Long jobId, String candidateEmail) {
+        User candidate = userRepository.findByEmail(candidateEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return applicationRepository.findByCandidateIdAndJobId(candidate.getId(), jobId)
                 .orElse(null);
     }
 }

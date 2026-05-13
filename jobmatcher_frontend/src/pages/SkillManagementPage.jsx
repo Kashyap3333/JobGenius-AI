@@ -290,19 +290,24 @@ export default function SkillManagementPage() {
   // Clear all — PUT /skills with []
   const handleClearAll = async () => {
     if (!window.confirm("Remove all your skills?")) return;
+
     setClearingAll(true);
+
     try {
       await API.put("/skills", {
         skillIds: [],
       });
+
       setMySkills([]);
-    } catch {
-      setMySkills([]);
+      setSelectedRemoveSkills(new Set());
+    } catch (e) {
+      console.log(e);
+
+      setSkillsError("Failed to clear skills.");
     } finally {
       setClearingAll(false);
     }
   };
-
   // Toggle select from popular grid
   const toggleSelect = (skill) => {
     if (mySkills.some((s) => s.id === skill.id)) return;
@@ -416,7 +421,7 @@ export default function SkillManagementPage() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="w-full max-w-[1700px] mx-auto px-3 sm:px-4 lg:px-5 xl:px-6 py-6 sm:py-8">
         {/* ── Page header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
           <div className="flex-1 min-w-0">

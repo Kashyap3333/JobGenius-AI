@@ -38,4 +38,8 @@ public class Application {
 
     @Column(length = 2000)
     private String coverLetter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "resume_id")
+    private Resume selectedResume;
 }

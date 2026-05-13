@@ -17,6 +17,8 @@ import {
   BookmarkCheck,
   BookmarkX,
   BadgeCheck,
+  FileText,
+  Eye,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -217,15 +219,17 @@ function AppliedJobsTab({ matchMap }) {
   return (
     <>
       {/* Table header — desktop */}
-      <div className="hidden md:grid grid-cols-[2.4fr_1.1fr_1fr_0.7fr_1fr] gap-6 px-6 pb-3 border-b border-gray-100 items-center">
-        {["Job", "Company", "Applied On", "Match", "Action"].map((h) => (
-          <span
-            key={h}
-            className="text-xs font-semibold text-gray-400 uppercase tracking-wide"
-          >
-            {h}
-          </span>
-        ))}
+      <div className="hidden md:grid grid-cols-[2.4fr_1.1fr_1fr_0.7fr_1.2fr_1fr] gap-6 px-6 pb-3 border-b border-gray-100 items-center">
+        {["Job", "Company", "Applied On", "Match", "Resume", "Action"].map(
+          (h) => (
+            <span
+              key={h}
+              className="text-xs font-semibold text-gray-400 uppercase tracking-wide"
+            >
+              {h}
+            </span>
+          ),
+        )}
       </div>
 
       {/* Rows */}
@@ -239,7 +243,7 @@ function AppliedJobsTab({ matchMap }) {
           return (
             <div
               key={app.id}
-              className="grid grid-cols-1 md:grid-cols-[2.4fr_1.1fr_1fr_0.7fr_1fr] gap-6 items-center px-6 py-5 hover:bg-gray-50 transition-all rounded-xl"
+              className="grid grid-cols-1 md:grid-cols-[2.4fr_1.1fr_1fr_0.7fr_1.2fr_1fr] gap-6 items-center px-6 py-5 hover:bg-gray-50 transition-all rounded-xl"
             >
               {/* Job info */}
               <div className="flex items-center gap-3">
@@ -298,6 +302,32 @@ function AppliedJobsTab({ matchMap }) {
                 >
                   {pct}%
                 </span>
+              </div>
+
+              {/* Resume */}
+              <div className="hidden md:flex items-center">
+                {app.selectedResumeFileName && app.selectedResumeUrl ? (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FileText size={13} className="text-gray-400 shrink-0" />
+                    <span
+                      className="text-xs text-gray-600 truncate max-w-28"
+                      title={app.selectedResumeFileName}
+                    >
+                      {app.selectedResumeFileName}
+                    </span>
+                    <a
+                      href={app.selectedResumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Preview resume"
+                      className="w-6 h-6 flex items-center justify-center rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0 cursor-pointer"
+                    >
+                      <Eye size={13} />
+                    </a>
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-300">—</span>
+                )}
               </div>
 
               {/* Action */}

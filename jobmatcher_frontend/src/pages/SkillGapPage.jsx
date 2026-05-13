@@ -8,6 +8,7 @@ import {
   Filter,
   TrendingUp,
   Search,
+  ChevronDown,
   Calendar,
   LayoutGrid,
   ChevronRight,
@@ -505,9 +506,24 @@ export default function SkillGapPage() {
                 <>
                   <MatchRing pct={matchPct} />
                   <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                    <span>Matched: <span className="font-bold text-green-600">{matchedSkills.length}</span></span>
-                    <span>Missing: <span className="font-bold text-red-500">{missingSkills.length}</span></span>
-                    <span>Total: <span className="font-bold text-gray-700">{jobSkills.length}</span></span>
+                    <span>
+                      Matched:{" "}
+                      <span className="font-bold text-green-600">
+                        {matchedSkills.length}
+                      </span>
+                    </span>
+                    <span>
+                      Missing:{" "}
+                      <span className="font-bold text-red-500">
+                        {missingSkills.length}
+                      </span>
+                    </span>
+                    <span>
+                      Total:{" "}
+                      <span className="font-bold text-gray-700">
+                        {jobSkills.length}
+                      </span>
+                    </span>
                   </div>
                 </>
               )}
@@ -575,15 +591,50 @@ export default function SkillGapPage() {
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-600 focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="match">Best Match</option>
-                    <option value="newest">Newest</option>
-                    <option value="title">Title A–Z</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="
+      appearance-none
+      h-9
+      min-w-[125px]
+      pl-3
+      pr-9
+      text-sm
+      font-medium
+      text-gray-700
+      bg-white
+      border border-gray-200
+      rounded-lg
+      shadow-sm
+      cursor-pointer
+      transition-all
+      hover:border-blue-300
+      hover:bg-blue-50/30
+      focus:outline-none
+      focus:ring-2
+      focus:ring-blue-100
+      focus:border-blue-500
+    "
+                    >
+                      <option value="match">Best Match</option>
+                      <option value="newest">Newest</option>
+                      <option value="title">Title A–Z</option>
+                    </select>
+
+                    <ChevronDown
+                      size={15}
+                      className="
+      absolute
+      right-3
+      top-1/2
+      -translate-y-1/2
+      text-gray-400
+      pointer-events-none
+    "
+                    />
+                  </div>
                   <div className="flex border border-gray-200 rounded-lg overflow-hidden bg-white">
                     <button
                       onClick={() => setViewMode("list")}

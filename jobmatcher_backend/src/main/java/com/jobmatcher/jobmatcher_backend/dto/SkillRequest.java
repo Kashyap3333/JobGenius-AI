@@ -7,7 +7,5 @@ import java.util.List;
 
 @Data
 public class SkillRequest {
-
-    @NotEmpty(message = "Skill IDs cannot be empty")
     private List<Long> skillIds;
 }

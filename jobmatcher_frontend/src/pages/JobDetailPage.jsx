@@ -1,6 +1,6 @@
 // src/pages/JobDetailPage.jsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   MapPin,
@@ -26,6 +26,10 @@ import {
   TrendingUp,
   RefreshCw,
   Trash2,
+  Star,
+  Eye,
+  Upload,
+  FileText,
 } from "lucide-react";
 import API from "../services/api";
 
@@ -185,19 +189,44 @@ function MetaItem({ icon: Icon, label, value, red }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ApplyModal({ job, onClose, onSuccess }) {
+  const [resumes, setResumes] = useState([]);
+  const [selectedResumeId, setSelectedResumeId] = useState(null);
   const [coverLetter, setCoverLetter] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resumesLoading, setResumesLoading] = useState(true);
+  const [uploadingLocal, setUploadingLocal] = useState(false);
   const [error, setError] = useState("");
+  const localFileRef = useRef(null);
+
+  useEffect(() => {
+    API.get("/resume/my")
+      .then((r) => {
+        const list = r.data || [];
+        const sorted = [...list].sort(
+          (a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0),
+        );
+        setResumes(sorted);
+        const primary = sorted.find((r) => r.primary);
+        setSelectedResumeId(primary?.id ?? sorted[0]?.id ?? null);
+      })
+      .catch(() => {})
+      .finally(() => setResumesLoading(false));
+  }, []);
 
   const handleApply = async () => {
+    if (!selectedResumeId) return;
     setLoading(true);
     setError("");
     try {
-      // POST /applications/{jobId}  with optional coverLetter
       const res = await API.post(`/applications/${job.id}`, {
         coverLetter: coverLetter.trim() || null,
+        selectedResumeId,
       });
-      onSuccess(res.data?.id);
+      onSuccess(
+        res.data?.id,
+        res.data?.selectedResumeFileName,
+        res.data?.selectedResumeUrl,
+      );
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -209,11 +238,55 @@ function ApplyModal({ job, onClose, onSuccess }) {
     }
   };
 
+  const handleLocalFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLocal(true);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await API.post("/resume/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const newResume = res.data;
+      setResumes((prev) => [...prev, newResume]);
+      setSelectedResumeId(newResume.id);
+    } catch (err) {
+      setError(
+        err?.response?.data ||
+          "Failed to upload resume. Max 5MB, PDF/DOC/DOCX only.",
+      );
+    } finally {
+      setUploadingLocal(false);
+      if (localFileRef.current) localFileRef.current.value = "";
+    }
+  };
+
+  function fmtUploadDate(d) {
+    if (!d) return "";
+    try {
+      return new Date(d).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return "";
+    }
+  }
+
+  function getExt(name) {
+    if (!name) return "FILE";
+    const dot = name.lastIndexOf(".");
+    return dot !== -1 ? name.slice(dot + 1).toUpperCase() : "FILE";
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div>
             <h3 className="text-base font-bold text-gray-900">
               Apply for this Job
@@ -231,31 +304,160 @@ function ApplyModal({ job, onClose, onSuccess }) {
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5">
+        <div className="px-6 py-5 overflow-y-auto flex-1">
           {error && (
             <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
               <AlertCircle size={14} className="shrink-0" /> {error}
             </div>
           )}
 
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          {/* Resume Selection */}
+          <p className="text-sm font-semibold text-gray-800 mb-2.5">
+            Select Resume <span className="text-red-400">*</span>
+          </p>
+
+          {resumesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 size={22} className="animate-spin text-blue-500" />
+            </div>
+          ) : resumes.length === 0 ? (
+            <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-xl px-4 py-3 mb-4">
+              <AlertCircle size={15} className="shrink-0 mt-0.5" />
+              <span>
+                No resume uploaded. Please upload a resume from your{" "}
+                <strong>Profile</strong> page before applying.
+              </span>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 mb-5">
+              {resumes.map((r) => {
+                const ext = getExt(r.originalFileName);
+                const isSelected = selectedResumeId === r.id;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setSelectedResumeId(r.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {/* Ext badge */}
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold border ${
+                        ext === "PDF"
+                          ? "bg-red-50 text-red-600 border-red-100"
+                          : "bg-indigo-50 text-indigo-600 border-indigo-100"
+                      }`}
+                    >
+                      {ext}
+                    </div>
+
+                    {/* Name + date */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {r.originalFileName}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Uploaded {fmtUploadDate(r.uploadedAt)}
+                      </p>
+                    </div>
+
+                    {/* Badges + preview */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {r.primary && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full border border-blue-200">
+                          <Star size={9} fill="currentColor" /> PRIMARY
+                        </span>
+                      )}
+                      <a
+                        href={r.resumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Preview resume"
+                        className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer"
+                      >
+                        <Eye size={14} />
+                      </a>
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          isSelected
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isSelected && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Upload from device */}
+          {!resumesLoading && (
+            <>
+              <input
+                ref={localFileRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={handleLocalFile}
+              />
+              <button
+                type="button"
+                onClick={() => localFileRef.current?.click()}
+                disabled={uploadingLocal}
+                className="w-full flex items-center gap-3 px-4 py-3 mb-5 rounded-xl border border-dashed border-gray-300 text-left hover:border-blue-400 hover:bg-blue-50/40 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-all"
+              >
+                {uploadingLocal ? (
+                  <Loader2
+                    size={16}
+                    className="animate-spin text-blue-500 shrink-0"
+                  />
+                ) : (
+                  <Upload size={16} className="text-gray-400 shrink-0" />
+                )}
+                <span
+                  className={`text-sm font-medium ${uploadingLocal ? "text-blue-600" : "text-gray-500"}`}
+                >
+                  {uploadingLocal ? "Uploading…" : "Upload from device"}
+                </span>
+                <span className="text-xs text-gray-400 ml-auto">
+                  PDF, DOC, DOCX · max 5 MB
+                </span>
+              </button>
+            </>
+          )}
+
+          {/* Cover Letter */}
+          <label className="block text-sm font-semibold text-gray-800 mb-1.5">
             Cover Letter{" "}
-            <span className="text-gray-400 font-normal">(optional)</span>
+            <span className="text-gray-400 font-normal text-xs">
+              (optional)
+            </span>
           </label>
           <textarea
             value={coverLetter}
             onChange={(e) => setCoverLetter(e.target.value)}
-            rows={5}
+            rows={4}
+            maxLength={1000}
             placeholder="Tell the recruiter why you're a great fit for this role..."
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all resize-none text-gray-700 placeholder-gray-400"
           />
-          <p className="text-xs text-gray-400 mt-1.5">
+          <p className="text-xs text-gray-400 mt-1">
             {coverLetter.length} / 1000 characters
           </p>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 pb-5">
+        <div className="flex gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all"
@@ -264,7 +466,7 @@ function ApplyModal({ job, onClose, onSuccess }) {
           </button>
           <button
             onClick={handleApply}
-            disabled={loading}
+            disabled={loading || !selectedResumeId}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-200"
           >
             {loading ? (
@@ -284,24 +486,43 @@ function ApplyModal({ job, onClose, onSuccess }) {
 // Success Toast
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SuccessToast({ onClose }) {
+function SuccessToast({ onClose, resumeFileName, resumeUrl }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 4000);
+    const t = setTimeout(onClose, 5000);
     return () => clearTimeout(t);
   }, [onClose]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-green-600 text-white px-5 py-3.5 rounded-2xl shadow-xl animate-in slide-in-from-bottom-4">
-      <CheckCircle2 size={18} />
-      <div>
+    <div className="fixed bottom-6 right-6 z-50 flex items-start gap-3 bg-green-600 text-white px-5 py-3.5 rounded-2xl shadow-xl animate-in slide-in-from-bottom-4 max-w-sm">
+      <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
         <p className="text-sm font-bold">Application Submitted!</p>
         <p className="text-xs text-green-200 mt-0.5">
           We'll notify you on updates.
         </p>
+        {resumeFileName && (
+          <div className="flex items-center gap-1.5 mt-1.5 bg-green-700/50 rounded-lg px-2.5 py-1.5">
+            <FileText size={11} className="text-green-200 shrink-0" />
+            <span className="text-xs text-green-100 truncate">
+              {resumeFileName}
+            </span>
+            {resumeUrl && (
+              <a
+                href={resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto shrink-0 hover:text-white text-green-200 transition-colors cursor-pointer"
+                title="Preview resume"
+              >
+                <Eye size={12} />
+              </a>
+            )}
+          </div>
+        )}
       </div>
       <button
         onClick={onClose}
-        className="ml-2 hover:text-green-200 transition-colors"
+        className="hover:text-green-200 transition-colors shrink-0"
       >
         <X size={14} />
       </button>
@@ -367,6 +588,8 @@ export default function JobDetailPage() {
   const [showWithdrawSuccess, setShowWithdrawSuccess] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [applicationId, setApplicationId] = useState(null);
+  const [appliedResumeFileName, setAppliedResumeFileName] = useState(null);
+  const [appliedResumeUrl, setAppliedResumeUrl] = useState(null);
   // ── 1. GET /jobs/{id} ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!id) return;
@@ -381,11 +604,24 @@ export default function JobDetailPage() {
   // ── 2. GET /applications/check/{jobId} ─────────────────────────────────────
   useEffect(() => {
     if (!id || !localStorage.getItem("token")) return;
+
     API.get(`/applications/check/${id}`)
       .then((r) => {
         const applied = r.data === true || r.data?.applied === true;
+
         setAlreadyApplied(applied);
-        if (r.data?.applicationId) setApplicationId(r.data.applicationId);
+
+        if (r.data?.applicationId) {
+          setApplicationId(r.data.applicationId);
+        }
+
+        if (r.data?.resumeFileName) {
+          setAppliedResumeFileName(r.data.resumeFileName);
+        }
+
+        if (r.data?.resumeUrl) {
+          setAppliedResumeUrl(r.data.resumeUrl);
+        }
       })
       .catch(() => {});
   }, [id]);
@@ -413,11 +649,13 @@ export default function JobDetailPage() {
   }, [id]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleApplySuccess = (appId) => {
+  const handleApplySuccess = (appId, resumeFileName, resumeUrl) => {
     setShowApplyModal(false);
     setAlreadyApplied(true);
     setShowSuccess(true);
     if (appId) setApplicationId(appId);
+    if (resumeFileName) setAppliedResumeFileName(resumeFileName);
+    if (resumeUrl) setAppliedResumeUrl(resumeUrl);
   };
 
   const handleToggleSave = () => {
@@ -609,21 +847,47 @@ export default function JobDetailPage() {
                 {/* CTA buttons (desktop right) */}
                 <div className="hidden sm:flex flex-col gap-2.5 shrink-0 min-w-[160px]">
                   {alreadyApplied ? (
-                    <button
-                      onClick={handleWithdrawApplication}
-                      disabled={withdrawLoading}
-                      className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
-                    >
-                      {withdrawLoading ? (
-                        <Loader2 size={15} className="animate-spin" />
-                      ) : (
-                        <Trash2 size={15} />
+                    <>
+                      <button
+                        onClick={handleWithdrawApplication}
+                        disabled={withdrawLoading}
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                      >
+                        {withdrawLoading ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={15} />
+                        )}
+                        {withdrawLoading
+                          ? "Withdrawing..."
+                          : "Withdraw Application"}
+                      </button>
+                      {appliedResumeFileName && (
+                        <div className="flex items-center gap-1.5 px-3 py-2 bg-green-50 border border-green-200 rounded-xl">
+                          <FileText
+                            size={11}
+                            className="text-green-600 shrink-0"
+                          />
+                          <span
+                            className="text-[11px] text-green-700 font-medium truncate flex-1"
+                            title={appliedResumeFileName}
+                          >
+                            {appliedResumeFileName}
+                          </span>
+                          {appliedResumeUrl && (
+                            <a
+                              href={appliedResumeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Preview"
+                              className="text-green-500 hover:text-green-700 cursor-pointer shrink-0"
+                            >
+                              <Eye size={12} />
+                            </a>
+                          )}
+                        </div>
                       )}
-
-                      {withdrawLoading
-                        ? "Withdrawing..."
-                        : "Withdraw Application"}
-                    </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => setShowApplyModal(true)}
@@ -952,7 +1216,13 @@ export default function JobDetailPage() {
       )}
 
       {/* ── Success Toast ── */}
-      {showSuccess && <SuccessToast onClose={() => setShowSuccess(false)} />}
+      {showSuccess && (
+        <SuccessToast
+          onClose={() => setShowSuccess(false)}
+          resumeFileName={appliedResumeFileName}
+          resumeUrl={appliedResumeUrl}
+        />
+      )}
       {showWithdrawSuccess && (
         <WithdrawToast onClose={() => setShowWithdrawSuccess(false)} />
       )}
