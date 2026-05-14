@@ -1,6 +1,6 @@
-package com.jobmatcher.jobmatcher_backend.ai;
+package com.jobmatcher.jobmatcher_backend.ai.AIInsight;
 
-import com.jobmatcher.jobmatcher_backend.ai.dto.AIInsightRequest;
+import com.jobmatcher.jobmatcher_backend.ai.AIInsight.dto.AIInsightRequest;
 import java.util.List;
 
 /**

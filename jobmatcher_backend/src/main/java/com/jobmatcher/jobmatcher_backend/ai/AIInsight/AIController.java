@@ -1,7 +1,7 @@
-package com.jobmatcher.jobmatcher_backend.ai;
+package com.jobmatcher.jobmatcher_backend.ai.AIInsight;
 
-import com.jobmatcher.jobmatcher_backend.ai.dto.AIInsightRequest;
-import com.jobmatcher.jobmatcher_backend.ai.dto.AIInsightResponse;
+import com.jobmatcher.jobmatcher_backend.ai.AIInsight.dto.AIInsightRequest;
+import com.jobmatcher.jobmatcher_backend.ai.AIInsight.dto.AIInsightResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

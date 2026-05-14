@@ -1,4 +1,4 @@
-package com.jobmatcher.jobmatcher_backend.ai.dto;
+package com.jobmatcher.jobmatcher_backend.ai.AIInsight.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

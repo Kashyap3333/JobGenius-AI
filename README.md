@@ -29,6 +29,12 @@ User → Login → Add Skills → Job Matching Engine → Match % → Skill Gap 
 - Job details
 - Apply/withdraw application
 
+### AI Career Insights (NVIDIA NIM)
+
+- AI-generated career tips powered by NVIDIA NIM
+- Personalized 5-point tips based on matched and missing skills
+- Integrated in Skill Gap page via `AIInsightsCard` component
+
 ### Recommendations
 
 - Missing skill suggestions
@@ -253,6 +259,34 @@ http://localhost:8080/api
 
 ---
 
+# AI APIs
+
+## AI Insights `/api/ai`
+
+| Method | Endpoint                  | Description                        | Auth Required |
+| ------ | ------------------------- | ---------------------------------- | ------------- |
+| POST   | `/api/ai/career-insights` | Get AI career tips for a job role  | Candidate     |
+
+### Request Body
+
+```json
+{
+  "targetRole": "string",
+  "matchedSkills": ["string"],
+  "missingSkills": ["string"]
+}
+```
+
+### Response Fields
+
+| Field    | Type     | Description                     |
+| -------- | -------- | ------------------------------- |
+| success  | Boolean  | Whether insights were generated |
+| insights | String[] | Array of 5 career tip strings   |
+| error    | String   | Error message if failed         |
+
+---
+
 # Enum APIs
 
 ## Enums `/enums`
@@ -283,7 +317,7 @@ http://localhost:8080/api
 | JobDetailPage `/jobs/:id`               | View full job details + apply | `GET /jobs/:id`, `POST /applications/:jobId`, `GET /applications/check/:jobId`, `GET /resume/my`                           | Match ring, resume selection modal (with local upload), apply/withdraw, expiry warning         |
 | MyApplicationsPage `/my-applications`   | Track applied jobs            | `GET /applications/my`, `DELETE /applications/:id`                                                                         | Status badges, resume column (filename + preview), withdraw application                        |
 | SkillManagementPage `/skill-management` | Add/remove personal skills    | `GET /skills/user`, `POST /skills`, `DELETE /skills/:id`                                                                   | Skill strength indicator, tag-style UI                                                         |
-| SkillGapPage `/skill-gap/:jobId`        | Analyze skill gap for a job   | `GET /jobmatch/match`                                                                                                      | Matched vs missing skills, salary info, job match score                                        |
+| SkillGapPage `/skill-gap/:jobId`        | Analyze skill gap for a job   | `GET /jobmatch/match`, `POST /api/ai/career-insights`                                                                      | Matched vs missing skills, salary info, job match score, AI career insights card               |
 | CandidateProfilePage `/profile`         | Manage candidate profile      | `GET /users/me`, `PUT /users/me`, `GET /resume/my`, `POST /resume/upload`, `DELETE /resume/:id`, `PUT /resume/:id/primary` | Personal info, resume upload/preview/delete, set primary, profile completion, activity summary |
 
 ---

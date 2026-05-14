@@ -1,8 +1,8 @@
-package com.jobmatcher.jobmatcher_backend.ai;
+package com.jobmatcher.jobmatcher_backend.ai.AIInsight;
 
 
-import com.jobmatcher.jobmatcher_backend.ai.dto.AIInsightRequest;
-import com.jobmatcher.jobmatcher_backend.ai.dto.AIInsightResponse;
+import com.jobmatcher.jobmatcher_backend.ai.AIInsight.dto.AIInsightRequest;
+import com.jobmatcher.jobmatcher_backend.ai.AIInsight.dto.AIInsightResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
