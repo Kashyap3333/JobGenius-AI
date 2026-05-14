@@ -273,7 +273,7 @@ export default function PostJobPage({
     const payload = {
       ...form,
       salary: Number(form.salary),
-      requiredSkills: selectedSkills.map((s) => s.name),
+      skillIds: selectedSkills.map((s) => s.id),
     };
 
     try {

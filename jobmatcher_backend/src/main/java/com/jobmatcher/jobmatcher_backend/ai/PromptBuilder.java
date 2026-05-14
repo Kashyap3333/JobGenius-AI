@@ -30,8 +30,8 @@ public class PromptBuilder {
 
         return  "Role: " + req.getTargetRole() + "\n"
                 + "Has: "     + matched + "\n"
-                + "Missing: " + missing + "\n" 
-                + "Give exactly 5 very short career tips.\n"
+                + "Missing: " + missing + "\n"
+                + "Give exactly 5 very short career tips based on missing skills and has skill.\n"
                 + "Each point max 10 words.\n"
                 + "No explanation.\n"
                 + "Bullet points only.";
