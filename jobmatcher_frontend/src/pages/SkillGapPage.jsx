@@ -27,6 +27,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import API from "../services/api";
+import AIInsightsCard from "../components/AIInsightsCard";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -1096,6 +1097,17 @@ export default function SkillGapPage() {
                 </div>
               </div>
             )}
+
+            {/* ── AI Insights ── */}
+            <AIInsightsCard
+              targetRole={job?.title || "Target Role"}
+              matchedSkills={(matchedSkills || []).map(s =>
+                typeof s === "string" ? s : s.name || s.skillName
+              )}
+              missingSkills={(missingSkills || []).map(s =>
+                typeof s === "string" ? s : s.name || s.skillName
+              )}
+            />
 
             {/* ── Action buttons ── */}
             <div className="flex flex-col sm:flex-row gap-3 mt-5 pt-5 border-t border-gray-100">

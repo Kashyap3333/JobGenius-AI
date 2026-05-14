@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("RECRUITER")
                         .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("RECRUITER")
 
+                        .requestMatchers(HttpMethod.POST, "/api/ai/**").permitAll()
                         // User profile, password, image
                         .requestMatchers("/users/**").authenticated()
 
@@ -77,9 +78,14 @@ public class SecurityConfig {
                         // Serve uploaded files publicly (direct link access)
                         .requestMatchers("/uploads/resumes/**").permitAll()
                         .requestMatchers("/uploads/profile-images/**").permitAll()
+                        //AI intergration
+                        .requestMatchers("/api/ai/**").authenticated()
+
+
 
                         //  Everything else
                         .anyRequest().authenticated()
+
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

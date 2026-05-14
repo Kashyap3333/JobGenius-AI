@@ -19,3 +19,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0;
   display: none;
 }
+
+/* AllInSight card styling */
+.ai-career-insights {
+  font-family: system-ui, sans-serif;
+}
+
+.ai-career-insights h2 {
+  font-family: system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.ai-career-insights p,
+.ai-career-insights li,
+.ai-career-insights span {
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+}
