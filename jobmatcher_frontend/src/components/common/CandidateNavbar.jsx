@@ -37,6 +37,7 @@ export default function CandidateNavbar() {
     { to: "/skill-management", label: "Skill Management", icon: Layers },
     { to: "/skill-gap", label: "Skill Gap", icon: BarChart2 },
     { to: "/my-applications", label: "My Applications", icon: ClipboardCheck },
+    { to: "/resume-analyzer", label: "Resume Analyzer", icon: Settings },
   ];
 
   const isActive = (path) => location.pathname.startsWith(path);

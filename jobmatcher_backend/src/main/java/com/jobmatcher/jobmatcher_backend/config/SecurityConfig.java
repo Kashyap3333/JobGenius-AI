@@ -81,7 +81,7 @@ public class SecurityConfig {
                         //AI intergration
                         .requestMatchers("/api/ai/**").authenticated()
 
-
+                        .requestMatchers("/api/resume/**").authenticated()
 
                         //  Everything else
                         .anyRequest().authenticated()

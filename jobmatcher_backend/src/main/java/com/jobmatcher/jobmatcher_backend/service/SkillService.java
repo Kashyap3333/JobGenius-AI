@@ -11,10 +11,12 @@ import jakarta.validation.Valid;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class SkillService {
 
     @Autowired
@@ -95,6 +97,7 @@ public class SkillService {
 
     }
 
+    @Transactional(readOnly = true)
     public List<SkillResponse> getUserSkills(String candidateEmail) {
 
         User Candidate = userRepository.findByEmail(candidateEmail)

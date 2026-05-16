@@ -25,6 +25,7 @@ import SkillGapPage from "../pages/SkillGapPage";
 import MyApplicationsPage from "../pages/MyApplicationsPage";
 import JobDetailPage from "../pages/JobDetailPage";
 import CandidateProfilePage from "../pages/CandidateProfilePage";
+import ResumeAnalyzerPage from "../pages/ResumeAnalyzerPage";
 
 export default function AppRoutes() {
   return (
@@ -58,6 +59,7 @@ export default function AppRoutes() {
           <Route path="/skill-gap" element={<SkillGapPage />} />
           <Route path="/my-applications" element={<MyApplicationsPage />} />
           <Route path="/profile" element={<CandidateProfilePage />} />
+          <Route path="/resume-analyzer" element={<ResumeAnalyzerPage />} />
         </Route>
       </Route>
 

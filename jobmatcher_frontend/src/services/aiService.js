@@ -1,14 +1,18 @@
+// ============================================================
 // src/services/aiService.js
+// Final AI Service — Career Insights + Resume Analyzer
+// ============================================================
 
-import API from "./api"; // reuse your existing Axios instance
+import API from "./api";
+
+// ──────────────────────────────────────────────────────────
+// Career Insights
+// ──────────────────────────────────────────────────────────
 
 /**
- * Fetches AI career insights from the backend.
- *
- * @param {string}   targetRole    - e.g. "Backend Developer"
- * @param {string[]} matchedSkills - e.g. ["Java", "Spring Boot"]
- * @param {string[]} missingSkills - e.g. ["SQL", "GitHub"]
- * @returns {Promise<string[]>} array of insight strings
+ * POST /api/ai/career-insights
+ * Fetches AI career insights based on skill gap.
+ * Used in: SkillGapPage.jsx, AIInsightsCard.jsx
  */
 export async function fetchCareerInsights(
   targetRole,
@@ -20,5 +24,26 @@ export async function fetchCareerInsights(
     matchedSkills,
     missingSkills,
   });
-  return res.data; // { success, insights, error }
+  return res.data;
+}
+
+// ──────────────────────────────────────────────────────────
+// Resume Analyzer
+// ──────────────────────────────────────────────────────────
+
+/**
+ * POST /api/resume/analyze
+ * Sends resume file + optional jobId for ATS analysis.
+ * Used in: ResumeAnalyzerPage.jsx
+ */
+export async function analyzeResume({ file, resumeId, jobId } = {}) {
+  const formData = new FormData();
+  if (file)     formData.append("file",     file);
+  if (resumeId) formData.append("resumeId", resumeId);
+  if (jobId)    formData.append("jobId",    jobId);
+
+  const res = await API.post("/api/resume/analyze", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
 }
