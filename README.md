@@ -35,6 +35,20 @@ User → Login → Add Skills → Job Matching Engine → Match % → Skill Gap 
 - Personalized 5-point tips based on matched and missing skills
 - Integrated in Skill Gap page via `AIInsightsCard` component
 
+### AI Resume Analyzer — ATS Scoring (NVIDIA NIM)
+
+- Upload a new resume or select a saved one for analysis
+- Compare resume against any job posting's required skills
+- AI extracts skills, experience, education, and suggested roles via NVIDIA NIM
+- Hybrid ATS scoring engine (0–100) with four weighted components:
+  - **Skill Match** (60%) — deterministic backend logic
+  - **Experience Relevance** (20%) — AI-scored via NIM
+  - **Project Relevance** (10%) — AI-scored via NIM
+  - **Resume Strength** (10%) — keyword-based deterministic logic
+- Returns matched skills, missing skills, and AI-generated recommendations
+- Recommendations generated only when ATS score < 90 and missing skills exist
+- Powered by `ResumeAnalyzerPage` on the frontend
+
 ### Recommendations
 
 - Missing skill suggestions
@@ -110,7 +124,7 @@ src/main/java/com/jobmatcher
 ├── dto/
 ├── model/
 ├── config/
-└── exception/
+├── exception/
 
 # API Documentation
 
@@ -263,9 +277,9 @@ http://localhost:8080/api
 
 ## AI Insights `/api/ai`
 
-| Method | Endpoint                  | Description                        | Auth Required |
-| ------ | ------------------------- | ---------------------------------- | ------------- |
-| POST   | `/api/ai/career-insights` | Get AI career tips for a job role  | Candidate     |
+| Method | Endpoint                  | Description                       | Auth Required |
+| ------ | ------------------------- | --------------------------------- | ------------- |
+| POST   | `/api/ai/career-insights` | Get AI career tips for a job role | Candidate     |
 
 ### Request Body
 
@@ -284,6 +298,43 @@ http://localhost:8080/api
 | success  | Boolean  | Whether insights were generated |
 | insights | String[] | Array of 5 career tip strings   |
 | error    | String   | Error message if failed         |
+
+---
+
+## AI Resume Analyzer `/api/resume`
+
+| Method | Endpoint              | Description                                      | Auth Required |
+| ------ | --------------------- | ------------------------------------------------ | ------------- |
+| POST   | `/api/resume/analyze` | Analyze a resume against a job using ATS scoring | Candidate     |
+
+### Request — `multipart/form-data`
+
+| Parameter  | Type          | Required | Description                                   |
+| ---------- | ------------- | -------- | --------------------------------------------- |
+| `file`     | MultipartFile | No\*     | Resume file to upload (PDF/DOC/DOCX, max 5MB) |
+| `resumeId` | Long          | No\*     | ID of a saved resume to analyze               |
+| `jobId`    | Long          | No       | ID of the job to compare the resume against   |
+
+\* One of `file` or `resumeId` is required.
+
+### Response Fields
+
+| Field           | Type     | Description                                         |
+| --------------- | -------- | --------------------------------------------------- |
+| success         | Boolean  | Whether analysis succeeded                          |
+| atsScore        | Integer  | Overall ATS score (0–100)                           |
+| skillScore      | Integer  | Weighted skill match component score                |
+| experienceScore | Integer  | Weighted experience component score (AI)            |
+| projectScore    | Integer  | Weighted project component score (AI)               |
+| strengthScore   | Integer  | Weighted resume strength component score            |
+| extractedSkills | String[] | Skills detected in the resume                       |
+| matchedSkills   | String[] | Skills matching the job requirements                |
+| missingSkills   | String[] | Skills required by the job but absent in the resume |
+| experience      | String   | Experience summary extracted by AI                  |
+| education       | String   | Education summary extracted by AI                   |
+| suggestedRoles  | String[] | AI-suggested job roles based on resume content      |
+| recommendations | String[] | Up to 5 AI tips to improve the score (when < 90)    |
+| error           | String   | Error message if analysis failed                    |
 
 ---
 
@@ -311,14 +362,15 @@ http://localhost:8080/api
 
 # Candidate Pages (under `CandidateLayout`)
 
-| Page                                    | Purpose                       | APIs Used                                                                                                                  | Key Features                                                                                   |
-| --------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| JobListingPage `/find-jobs`             | Browse all jobs               | `GET /jobs`                                                                                                                | Search, filter by job type/work mode, grid/list toggle, pagination, bookmarks, match %         |
-| JobDetailPage `/jobs/:id`               | View full job details + apply | `GET /jobs/:id`, `POST /applications/:jobId`, `GET /applications/check/:jobId`, `GET /resume/my`                           | Match ring, resume selection modal (with local upload), apply/withdraw, expiry warning         |
-| MyApplicationsPage `/my-applications`   | Track applied jobs            | `GET /applications/my`, `DELETE /applications/:id`                                                                         | Status badges, resume column (filename + preview), withdraw application                        |
-| SkillManagementPage `/skill-management` | Add/remove personal skills    | `GET /skills/user`, `POST /skills`, `DELETE /skills/:id`                                                                   | Skill strength indicator, tag-style UI                                                         |
-| SkillGapPage `/skill-gap/:jobId`        | Analyze skill gap for a job   | `GET /jobmatch/match`, `POST /api/ai/career-insights`                                                                      | Matched vs missing skills, salary info, job match score, AI career insights card               |
-| CandidateProfilePage `/profile`         | Manage candidate profile      | `GET /users/me`, `PUT /users/me`, `GET /resume/my`, `POST /resume/upload`, `DELETE /resume/:id`, `PUT /resume/:id/primary` | Personal info, resume upload/preview/delete, set primary, profile completion, activity summary |
+| Page                                    | Purpose                       | APIs Used                                                                                                                  | Key Features                                                                                                   |
+| --------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| JobListingPage `/find-jobs`             | Browse all jobs               | `GET /jobs`                                                                                                                | Search, filter by job type/work mode, grid/list toggle, pagination, bookmarks, match %                         |
+| JobDetailPage `/jobs/:id`               | View full job details + apply | `GET /jobs/:id`, `POST /applications/:jobId`, `GET /applications/check/:jobId`, `GET /resume/my`                           | Match ring, resume selection modal (with local upload), apply/withdraw, expiry warning                         |
+| MyApplicationsPage `/my-applications`   | Track applied jobs            | `GET /applications/my`, `DELETE /applications/:id`                                                                         | Status badges, resume column (filename + preview), withdraw application                                        |
+| SkillManagementPage `/skill-management` | Add/remove personal skills    | `GET /skills/user`, `POST /skills`, `DELETE /skills/:id`                                                                   | Skill strength indicator, tag-style UI                                                                         |
+| SkillGapPage `/skill-gap/:jobId`        | Analyze skill gap for a job   | `GET /jobmatch/match`, `POST /api/ai/career-insights`                                                                      | Matched vs missing skills, salary info, job match score, AI career insights card                               |
+| CandidateProfilePage `/profile`         | Manage candidate profile      | `GET /users/me`, `PUT /users/me`, `GET /resume/my`, `POST /resume/upload`, `DELETE /resume/:id`, `PUT /resume/:id/primary` | Personal info, resume upload/preview/delete, set primary, profile completion, activity summary                 |
+| ResumeAnalyzerPage `/resume-analyzer`   | AI-powered ATS resume scoring | `GET /resume/my`, `GET /jobs`, `POST /api/resume/analyze`                                                                  | Select saved resume or upload new, select job, ATS score breakdown, matched/missing skills, AI recommendations |
 
 ---
 
@@ -357,6 +409,7 @@ http://localhost:8080/api
 - /skill-gap/:jobId
 - /my-applications
 - /profile
+- /resume-analyzer
 
 ## Route Protection
 
@@ -403,6 +456,17 @@ spring.datasource.username=postgres
 spring.datasource.password=your_password
 
 jwt.secret=your_jwt_secret
+
+# NVIDIA NIM — AI Resume Analyzer & Career Insights
+nvidia.nim.api.key=your_nvidia_nim_api_key
+nvidia.nim.api.url=https://integrate.api.nvidia.com/v1/chat/completions
+nvidia.nim.model=meta/llama-3.1-8b-instruct
+
+# ATS score weights (must sum to 100)
+ats.weight.skills=60
+ats.weight.experience=20
+ats.weight.projects=10
+ats.weight.strength=10
 ```
 
 ## Matching Formula

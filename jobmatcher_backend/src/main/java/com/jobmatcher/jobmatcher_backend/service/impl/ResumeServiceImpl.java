@@ -3,6 +3,7 @@ package com.jobmatcher.jobmatcher_backend.service.impl;
 import com.jobmatcher.jobmatcher_backend.dto.ResumeResponse;
 import com.jobmatcher.jobmatcher_backend.model.Resume;
 import com.jobmatcher.jobmatcher_backend.model.User;
+import com.jobmatcher.jobmatcher_backend.repository.ApplicationRepository;
 import com.jobmatcher.jobmatcher_backend.repository.ResumeRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
 import com.jobmatcher.jobmatcher_backend.service.ResumeService;
@@ -45,6 +46,9 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Autowired
     private ResumeRepository resumeRepository;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Override
     @Transactional
@@ -124,6 +128,12 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
         boolean wasPrimary = resume.isPrimary();
+
+        // Null out FK on any applications that referenced this resume
+        applicationRepository.findBySelectedResume_Id(resumeId)
+                .forEach(app -> app.setSelectedResume(null));
+        applicationRepository.flush();
+
         deleteFileFromDisk(resume.getStoredFileName());
         resumeRepository.delete(resume);
 

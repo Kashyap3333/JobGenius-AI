@@ -700,7 +700,7 @@ export default function ResumeAnalyzerPage() {
       `}</style>
 
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full max-w-400 mx-auto px-3 sm:px-4 lg:px-6 xl:px-13 py-8">
           {/* ── Hero Banner ─────────────────────────────── */}
           {!result && (
             <div

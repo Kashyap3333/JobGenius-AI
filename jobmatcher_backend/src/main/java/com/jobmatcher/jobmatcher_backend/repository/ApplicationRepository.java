@@ -18,4 +18,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     @Query("SELECT COUNT(a) FROM Application a WHERE a.job.id = :jobId")
     long countByJobId(@Param("jobId") Long jobId);
+
+    List<Application> findBySelectedResume_Id(Long resumeId);
 }

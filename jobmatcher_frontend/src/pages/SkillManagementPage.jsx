@@ -421,7 +421,7 @@ export default function SkillManagementPage() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
-      <div className="w-full max-w-[1700px] mx-auto px-3 sm:px-4 lg:px-5 xl:px-6 py-6 sm:py-8">
+      <div className="w-full max-w-400 mx-auto px-3 sm:px-4 lg:px-6 xl:px-13 py-6 sm:py-8">
         {/* ── Page header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
           <div className="flex-1 min-w-0">

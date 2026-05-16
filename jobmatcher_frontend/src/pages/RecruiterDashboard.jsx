@@ -1,5 +1,5 @@
 // src/pages/RecruiterDashboard.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -16,6 +16,49 @@ import {
   ChevronRight,
 } from "lucide-react";
 import API from "../services/api";
+
+// ── Rows Per Page ─────────────────────────────────────────────
+function RowsPerPage({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const options = [5, 10, 20, 50];
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-all cursor-pointer"
+      >
+        {value}
+        <ChevronDown
+          size={13}
+          className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="absolute right-0 bottom-full mb-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-20 w-20">
+          {options.map((o) => (
+            <div
+              key={o}
+              onClick={() => { onChange(o); setOpen(false); }}
+              className={`px-4 py-2 text-sm cursor-pointer ${value === o ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
+            >
+              {o}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Stat Card ─────────────────────────────────────────────────
 function StatCard({
@@ -75,7 +118,7 @@ function ActionMenu({ jobId, onDelete }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition"
+        className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition cursor-pointer"
       >
         <MoreVertical size={18} />
       </button>
@@ -102,7 +145,7 @@ function ActionMenu({ jobId, onDelete }) {
                 onDelete(jobId);
                 setOpen(false);
               }}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors cursor-pointer"
             >
               <Trash2 size={14} /> Delete
             </button>
@@ -150,7 +193,7 @@ export default function RecruiterDashboard() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 5;
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     API.get("/jobs/recruiter")
@@ -184,8 +227,9 @@ export default function RecruiterDashboard() {
     );
   });
 
-  const totalPages = Math.ceil(filteredJobs.length / PAGE_SIZE);
-  const pagedJobs = filteredJobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / rowsPerPage));
+  const safeP = Math.min(page, totalPages);
+  const pagedJobs = filteredJobs.slice((safeP - 1) * rowsPerPage, safeP * rowsPerPage);
 
   const handleSearch = (val) => {
     setSearchQuery(val);
@@ -214,7 +258,7 @@ export default function RecruiterDashboard() {
               Here's what's happening with your job postings.
             </p>
           </div>
-          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-700 hover:bg-gray-50 shadow-sm transition-colors shrink-0">
+          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-700 hover:bg-gray-50 shadow-sm transition-colors shrink-0 cursor-pointer">
             <Calendar size={15} className="sm:w-4 sm:h-4 text-gray-400" />
             <span className="whitespace-nowrap">May 12 – May 18, 2024</span>
             <ChevronDown size={15} className="sm:w-4 sm:h-4 text-gray-400" />
@@ -279,7 +323,7 @@ export default function RecruiterDashboard() {
                 {searchQuery && (
                   <button
                     onClick={() => handleSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                   >
                     <X size={13} />
                   </button>
@@ -388,7 +432,7 @@ export default function RecruiterDashboard() {
                           {/* Action */}
                           <button
                             onClick={() => setSearchQuery("")}
-                            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition"
+                            className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition cursor-pointer"
                           >
                             <X size={14} />
                             Clear Search
@@ -436,51 +480,59 @@ export default function RecruiterDashboard() {
           </div>
 
           {/* Pagination */}
-          {!loading && totalPages > 1 && (
-            <div className="border-t border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-              <p className="text-xs sm:text-sm text-gray-500">
-                Showing{" "}
-                <span className="font-semibold text-gray-700">
-                  {(page - 1) * PAGE_SIZE + 1}–
-                  {Math.min(page * PAGE_SIZE, filteredJobs.length)}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-gray-700">
-                  {filteredJobs.length}
-                </span>{" "}
-                jobs
-              </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 border-t border-gray-100">
+            <p className="text-xs text-gray-500">
+              Showing{" "}
+              {filteredJobs.length === 0 ? 0 : (safeP - 1) * rowsPerPage + 1} to{" "}
+              {Math.min(safeP * rowsPerPage, filteredJobs.length)} of{" "}
+              {filteredJobs.length} jobs
+            </p>
+            <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  disabled={safeP === 1}
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
-                  <ChevronLeft size={16} />
+                  <ChevronLeft size={14} />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => setPage(n)}
-                    className={`w-8 h-8 rounded-lg text-xs sm:text-sm font-semibold transition ${
-                      n === page
-                        ? "bg-blue-600 text-white"
-                        : "border border-gray-200 text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - safeP) <= 1)
+                  .reduce((acc, p, idx, arr) => {
+                    if (idx > 0 && arr[idx - 1] !== p - 1) acc.push("...");
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === "..." ? (
+                      <span key={`e-${i}`} className="px-2 text-gray-400 text-sm">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-all cursor-pointer ${safeP === p ? "bg-blue-600 text-white" : "border border-gray-200 text-gray-700 hover:bg-gray-50"}`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  disabled={safeP === totalPages}
+                  className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
-                  <ChevronRight size={16} />
+                  <ChevronRight size={14} />
                 </button>
               </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                Rows per page
+                <RowsPerPage
+                  value={rowsPerPage}
+                  onChange={(v) => { setRowsPerPage(v); setPage(1); }}
+                />
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
