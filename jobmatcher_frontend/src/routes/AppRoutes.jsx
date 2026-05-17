@@ -10,6 +10,7 @@ import CandidateLayout from "../components/layout/CandidateLayout";
 
 // Route guards
 import ProtectedRoute from "./ProtectedRoute";
+import GuestRoute from "./GuestRoute";
 
 // Recruiter pages
 import RecruiterDashboard from "../pages/RecruiterDashboard";
@@ -30,10 +31,12 @@ import ResumeAnalyzerPage from "../pages/ResumeAnalyzerPage";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* ── Public ── */}
+      {/* ── Public (guests only — redirect logged-in users to their dashboard) ── */}
       <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
+      <Route element={<GuestRoute />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
 
       {/* ── Recruiter — all pages share RecruiterLayout (Navbar) ── */}
       <Route element={<ProtectedRoute />}>

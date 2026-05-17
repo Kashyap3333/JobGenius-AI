@@ -1,4 +1,7 @@
 // src/pages/Register.jsx
+// UI redesign only — all logic preserved exactly as-is
+// Matches JobGenius brand: white + blue gradient
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -23,7 +26,6 @@ export default function Register() {
     password: "",
     role: "CANDIDATE",
   });
-
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,399 +76,481 @@ export default function Register() {
   };
 
   return (
-    <div className=" min-h-screen flex items-center justify-center bg-gradient-to-br from-[#EEF2FF] via-[#F8FAFF] to-[#F1F5FF] p-4 font-sans">
-      <div className="flex flex-col lg:flex-row w-full max-w-[960px]  bg-white rounded-2xl lg:rounded-[32px] shadow-[0_20px_60px_rgba(37,99,235,0.12)] overflow-hidden lg:min-h-[540px]">
-        {/* ── LEFT PANEL ──────────────────────────────────────── */}
+      <div
+        className="reg-wrap min-h-screen flex items-center justify-center p-4"
+        style={{
+          background:
+            "linear-gradient(135deg, #eff6ff 0%, #f0f4ff 50%, #eef2ff 100%)",
+        }}
+      >
+        {/* Ambient blobs */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-30"
+            style={{
+              background: "radial-gradient(circle, #bfdbfe, transparent)",
+            }}
+          />
+          <div
+            className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full opacity-25"
+            style={{
+              background: "radial-gradient(circle, #c7d2fe, transparent)",
+            }}
+          />
+        </div>
+
         <div
-          className="flex lg:flex flex-col justify-between w-full lg:w-[44%] p-5 lg:p-6 relative overflow-hidden"
+          className="relative z-10 w-full max-w-[960px] flex flex-col lg:flex-row rounded-[28px] overflow-hidden"
           style={{
-            background:
-              "linear-gradient(150deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%)",
+            boxShadow:
+              "0 32px 80px rgba(37,99,235,0.15), 0 0 0 1px rgba(255,255,255,0.7)",
           }}
         >
-          {/* Dot grid */}
-          <div className="absolute top-14 right-8 grid grid-cols-5 gap-[6px] opacity-20">
-            {Array.from({ length: 25 }).map((_, i) => (
-              <div key={i} className="w-[5px] h-[5px] bg-white rounded-full" />
-            ))}
-          </div>
+          {/* ════════════════ LEFT PANEL ════════════════ */}
+          <div
+            className="lg:w-[42%] relative overflow-hidden flex flex-col p-8 lg:p-10"
+            style={{
+              background:
+                "linear-gradient(145deg, #1d4ed8 0%, #2563eb 45%, #3b82f6 100%)",
+            }}
+          >
+            {/* Grid texture */}
+            <div
+              className="absolute inset-0 opacity-[0.05]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)",
+                backgroundSize: "36px 36px",
+              }}
+            />
 
-          {/* Sparkles */}
-          <div className="absolute top-28 right-28 text-white/40 text-2xl select-none">
-            ✦
-          </div>
-          <div className="absolute top-56 right-14 text-white/25 text-base select-none">
-            ✦
-          </div>
-          <div className="absolute bottom-44 left-16 text-white/30 text-xl select-none">
-            ✦
-          </div>
+            {/* Top shine */}
+            <div
+              className="absolute top-0 left-0 right-0 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+              }}
+            />
 
-          {/* ── BIG VERTICAL LOGO ─────────────────────────────── */}
-          <div className="flex justify-center">
-            <img
-              src={logo}
-              alt="JobGenius"
-              className="w-28 lg:w-36 object-contain drop-shadow-lg"
+            {/* Logo */}
+            <div className="relative z-10 anim-fade-up mb-6">
+              <div className="inline-flex bg-white rounded-2xl px-5 py-3 shadow-lg shadow-blue-900/20">
+                <img
+                  src={logo}
+                  alt="JobGenius"
+                  className="h-8 lg:h-10 w-auto object-contain"
+                />
+              </div>
+            </div>
+
+            {/* Headline */}
+            <div className="relative z-10 mb-8 anim-fade-up d1">
+              <p className="text-[10px] font-bold tracking-[0.22em] text-blue-200/80 uppercase mb-3">
+                Start your journey
+              </p>
+              <h2 className="text-2xl lg:text-[1.85rem] font-extrabold text-white leading-[1.3] mb-3">
+                Join thousands of
+                <br />
+                professionals finding
+                <br />
+                <span className="text-cyan-200">their dream job</span>
+              </h2>
+              <p className="text-blue-100/70 text-sm leading-relaxed max-w-[250px]">
+                AI-powered matching, skill analysis and personalized
+                recommendations.
+              </p>
+            </div>
+
+            {/* Visual — orbital */}
+            <div className="relative z-10 flex-1 flex items-center justify-center anim-fade-up d2">
+              <div className="relative w-44 h-44">
+                <div className="orbit-ring anim-spin-ring absolute inset-0">
+                  <div
+                    className="orbit-dot"
+                    style={{
+                      background: "#93c5fd",
+                      boxShadow: "0 0 8px #93c5fd",
+                    }}
+                  />
+                </div>
+                <div
+                  className="orbit-ring anim-counter absolute inset-[24px]"
+                  style={{ borderColor: "rgba(255,255,255,0.3)" }}
+                >
+                  <div
+                    className="orbit-dot"
+                    style={{
+                      width: 7,
+                      height: 7,
+                      top: -3.5,
+                      left: "calc(50% - 3.5px)",
+                      background: "#bfdbfe",
+                    }}
+                  />
+                </div>
+
+                {/* Core */}
+                <div className="absolute inset-[50px] bg-white rounded-xl flex flex-col items-center justify-center gap-1 anim-pulse shadow-xl shadow-blue-600/20 anim-float-a">
+                  <UserRound size={22} className="text-blue-600" />
+                  <span className="text-[8px] font-black text-blue-700 tracking-wider uppercase">
+                    You
+                  </span>
+                </div>
+
+                {/* Floating badges */}
+                <div className="float-card absolute -top-2 -right-10 px-3 py-2 anim-float-b">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center text-xs">
+                      ✓
+                    </div>
+                    <div>
+                      <div className="text-blue-900 text-[10px] font-bold">
+                        Matched
+                      </div>
+                      <div className="text-gray-400 text-[9px]">87% ATS</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="float-card absolute -bottom-3 -left-10 px-3 py-2 anim-float-a"
+                  style={{ animationDelay: "1s" }}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-xs">
+                      🎯
+                    </div>
+                    <div>
+                      <div className="text-blue-900 text-[10px] font-bold">
+                        340+ Jobs
+                      </div>
+                      <div className="text-gray-400 text-[9px]">Available</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="relative z-10 flex gap-2 mt-6 anim-fade-up d3">
+              {[
+                { val: "10k+", label: "Members" },
+                { val: "95%", label: "Accuracy" },
+                { val: "Free", label: "To join" },
+              ].map(({ val, label }) => (
+                <div
+                  key={label}
+                  className="stat-card flex-1 text-center px-2 py-2.5"
+                >
+                  <div className="text-base font-extrabold text-white">
+                    {val}
+                  </div>
+                  <div className="text-[10px] text-blue-200/70 font-medium">
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className="absolute bottom-0 left-0 right-0 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+              }}
             />
           </div>
 
-          {/* Hero text */}
-          <div className="z-10">
-            <h2 className="text-white text-[20px] lg:text-2xlfont-bold leading-tight mb-4">
-              Start your smart
-              <br />
-              career journey
-              <br />
-              <span className="text-cyan-300">today!</span>
-            </h2>
-            <p className="text-blue-100 text-sm leading-relaxed max-w-full lg:max-w-[240px]">
-              Join thousands of professionals getting matched with the right
-              opportunities.
-            </p>
-          </div>
+          {/* ════════════════ RIGHT PANEL ════════════════ */}
+          <div className="flex-1 flex flex-col justify-center px-7 sm:px-9 lg:px-12 py-8 relative bg-white">
+            {/* Already have account */}
+            <div className="absolute top-5 right-5 sm:right-7 text-sm text-gray-400">
+              Have an account?{" "}
+              <Link
+                to="/login"
+                className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
+              >
+                Login
+              </Link>
+            </div>
 
-          {/* Illustration */}
-          <div className="hidden lg:flex relative justify-center mt-4">
-            {/* Main card */}
-            <div className="bg-white/[0.15] backdrop-blur-sm rounded-2xl p-5 w-48 relative shadow-lg">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-blue-200/80 flex items-center justify-center">
-                  <UserRound size={28} className="text-blue-700" />
-                </div>
-                <div className="w-full space-y-2">
-                  <div className="h-2 bg-white/50 rounded-full w-full" />
-                  <div className="h-2 bg-white/40 rounded-full w-[85%]" />
-                  <div className="h-2 bg-white/30 rounded-full w-[65%]" />
-                  <div className="h-2 bg-white/25 rounded-full w-[80%]" />
-                </div>
+            {/* Heading */}
+            <div className="mb-5 anim-fade-up">
+              <h1 className="text-2xl font-extrabold text-gray-900 mb-1">
+                Create Account
+              </h1>
+              <p className="text-gray-400 text-sm">
+                Start your smart job matching journey
+              </p>
+            </div>
+
+            {/* Server error */}
+            {serverError && (
+              <div
+                className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm
+                rounded-xl px-4 py-3 anim-fade-up"
+              >
+                {serverError}
               </div>
-              {/* Checkmark */}
-              <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-emerald-400 rounded-full flex items-center justify-center shadow-lg ring-4 ring-emerald-400/20">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={3}
+            )}
+
+            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
+              {/* Username */}
+              <div className="anim-fade-up d1">
+                <div
+                  className={`reg-input flex items-center gap-3 px-4 h-[46px] ${errors.username ? "err" : ""}`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
+                  <User size={16} className="text-gray-300 shrink-0" />
+                  <input
+                    type="text"
+                    name="username"
+                    value={form.username}
+                    onChange={handleChange}
+                    placeholder="Username"
+                    disabled={loading}
+                    className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder-gray-300"
                   />
-                </svg>
+                </div>
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1 ml-1">
+                    {errors.username}
+                  </p>
+                )}
               </div>
-            </div>
 
-            {/* Floating badges */}
-            <div className="absolute -left-4 top-4 bg-white/20 backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
-              <div className="w-8 h-8 bg-blue-200/80 rounded-lg flex items-center justify-center">
-                <UserRound size={16} className="text-blue-700" />
-              </div>
-            </div>
-            <div className="absolute -right-2 top-6 bg-white/20 backdrop-blur-sm rounded-xl p-2.5 shadow-lg">
-              <BriefcaseBusiness size={18} className="text-white" />
-            </div>
-          </div>
-
-          <div className="mt-4" />
-        </div>
-
-        {/* ── RIGHT PANEL ─────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col justify-center px-5 sm:px-8 lg:px-14 py-10 relative">
-          {/* Top right link */}
-          <div className="absolute top-4 right-4 lg:top-6 lg:right-8 text-sm text-gray-500">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              Login
-            </Link>
-          </div>
-
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-1">
-            Create Your Account
-          </h1>
-          <p className="text-gray-500 text-sm mb-7">
-            Start your smart job matching journey
-          </p>
-
-          {/* Server error */}
-          {serverError && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3">
-              {serverError}
-            </div>
-          )}
-
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="space-y-3 lg:space-y-4"
-          >
-            {/* Username only */}
-            <div>
-              <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[40px] lg:h-[40px] bg-white transition-all duration-200
-                      focus-within:scale-[1.01] focus-within:shadow-[0_4px_14px_rgba(37,99,235,0.15)]
-                ${
-                  errors.username
-                    ? "border-red-400 ring-2 ring-red-100"
-                    : "border-gray-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100"
-                }`}
-              >
-                <User size={18} className="text-gray-400 shrink-0" />
-                <input
-                  type="text"
-                  name="username"
-                  value={form.username}
-                  onChange={handleChange}
-                  placeholder="Username"
-                  disabled={loading}
-                  className="flex-1 text-sm outline-none bg-transparent text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              {errors.username && (
-                <p className="text-red-500 text-xs mt-1.5 ml-1">
-                  {errors.username}
-                </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[40px] bg-white transition-all duration-200
-                      focus-within:scale-[1.01] focus-within:shadow-[0_4px_14px_rgba(37,99,235,0.15)]
-                ${
-                  errors.email
-                    ? "border-red-400 ring-2 ring-red-100"
-                    : "border-gray-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100"
-                }`}
-              >
-                <Mail size={18} className="text-gray-400 shrink-0" />
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Enter a Email"
-                  disabled={loading}
-                  className="flex-1 text-sm outline-none bg-transparent text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1.5 ml-1">
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Password only (no confirm) */}
-            <div>
-              <div
-                className={`flex items-center gap-2.5 border rounded-xl px-4 h-[40px] lg:h-[40px] bg-white transition-all duration-200
-                      focus-within:scale-[1.01] focus-within:shadow-[0_4px_14px_rgba(37,99,235,0.15)]
-                ${
-                  errors.password
-                    ? "border-red-400 ring-2 ring-red-100"
-                    : "border-gray-200 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100"
-                }`}
-              >
-                <Lock size={18} className="text-gray-400 shrink-0" />
-                <input
-                  type={showPass ? "text" : "password"}
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter a Password"
-                  disabled={loading}
-                  className="flex-1 text-sm outline-none bg-transparent text-gray-800 placeholder-gray-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+              {/* Email */}
+              <div className="anim-fade-up d2">
+                <div
+                  className={`reg-input flex items-center gap-3 px-4 h-[46px] ${errors.email ? "err" : ""}`}
                 >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  <Mail size={16} className="text-gray-300 shrink-0" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="Email address"
+                    disabled={loading}
+                    className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder-gray-300"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1 ml-1">
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="anim-fade-up d3">
+                <div
+                  className={`reg-input flex items-center gap-3 px-4 h-[46px] ${errors.password ? "err" : ""}`}
+                >
+                  <Lock size={16} className="text-gray-300 shrink-0" />
+                  <input
+                    type={showPass ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={handleChange}
+                    placeholder="Password (min 4 chars)"
+                    disabled={loading}
+                    className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder-gray-300"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass(!showPass)}
+                    className="text-gray-300 hover:text-gray-500 transition-colors shrink-0"
+                  >
+                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1 ml-1">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Role Selection */}
+              <div className="anim-fade-up d4">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2.5">
+                  I am a
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Candidate */}
+                  <label
+                    className={`role-card relative flex flex-col items-center gap-2 p-4
+                    ${form.role === "CANDIDATE" ? "active" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value="CANDIDATE"
+                      checked={form.role === "CANDIDATE"}
+                      onChange={handleChange}
+                      className="absolute top-3 right-3 accent-blue-600 w-3.5 h-3.5"
+                    />
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
+                      ${form.role === "CANDIDATE" ? "bg-blue-100" : "bg-gray-100"}`}
+                    >
+                      <UserRound
+                        size={19}
+                        className={
+                          form.role === "CANDIDATE"
+                            ? "text-blue-600"
+                            : "text-gray-400"
+                        }
+                      />
+                    </div>
+                    <span className="font-bold text-sm text-gray-800">
+                      Candidate
+                    </span>
+                    <span className="text-[10px] text-gray-400 text-center leading-snug">
+                      Looking for jobs
+                      <br />& opportunities
+                    </span>
+                  </label>
+
+                  {/* Recruiter */}
+                  <label
+                    className={`role-card relative flex flex-col items-center gap-2 p-4
+                    ${form.role === "RECRUITER" ? "active" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value="RECRUITER"
+                      checked={form.role === "RECRUITER"}
+                      onChange={handleChange}
+                      className="absolute top-3 right-3 accent-blue-600 w-3.5 h-3.5"
+                    />
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors
+                      ${form.role === "RECRUITER" ? "bg-blue-100" : "bg-gray-100"}`}
+                    >
+                      <BriefcaseBusiness
+                        size={19}
+                        className={
+                          form.role === "RECRUITER"
+                            ? "text-blue-600"
+                            : "text-gray-400"
+                        }
+                      />
+                    </div>
+                    <span className="font-bold text-sm text-gray-800">
+                      Recruiter
+                    </span>
+                    <span className="text-[10px] text-gray-400 text-center leading-snug">
+                      Hire and find
+                      <br />
+                      great talent
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div className="anim-fade-up d5">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-create w-full h-[46px] font-bold text-sm text-white
+                    flex items-center justify-center gap-2.5
+                    disabled:opacity-55 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <>
+                      <svg
+                        className="w-4 h-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Creating account…
+                    </>
+                  ) : (
+                    <>
+                      Create Account
+                      <svg
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </>
+                  )}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1.5 ml-1">
-                  {errors.password}
-                </p>
-              )}
-            </div>
 
-            {/* Role Selection */}
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">I am a</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Candidate */}
-                <label
-                  className={`relative flex flex-col items-center gap-2 p-5 border-2 rounded-xl cursor-pointer transition-all
-                  ${
-                    form.role === "CANDIDATE"
-                      ? "border-blue-500 bg-blue-50/60 shadow-sm"
-                      : "border-gray-200 hover:border-blue-200 bg-white"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value="CANDIDATE"
-                    checked={form.role === "CANDIDATE"}
-                    onChange={handleChange}
-                    className="absolute top-3 right-3 accent-blue-600 w-4 h-4"
-                  />
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors
-                    ${form.role === "CANDIDATE" ? "bg-blue-100" : "bg-gray-100"}`}
-                  >
-                    <UserRound
-                      size={22}
-                      className={
-                        form.role === "CANDIDATE"
-                          ? "text-blue-600"
-                          : "text-gray-500"
-                      }
-                    />
-                  </div>
-                  <span className="font-semibold text-sm text-gray-800">
-                    Candidate
-                  </span>
-                  <span className="text-[11px] text-gray-500 text-center leading-snug">
-                    I'm looking for jobs
-                    <br />
-                    and opportunities
-                  </span>
-                </label>
-
-                {/* Recruiter */}
-                <label
-                  className={`relative flex flex-col items-center gap-2 p-5 border-2 rounded-xl cursor-pointer transition-all
-                  ${
-                    form.role === "RECRUITER"
-                      ? "border-blue-500 bg-blue-50/60 shadow-sm"
-                      : "border-gray-200 hover:border-blue-200 bg-white"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value="RECRUITER"
-                    checked={form.role === "RECRUITER"}
-                    onChange={handleChange}
-                    className="absolute top-3 right-3 accent-blue-600 w-4 h-4"
-                  />
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors
-                    ${form.role === "RECRUITER" ? "bg-blue-100" : "bg-gray-100"}`}
-                  >
-                    <BriefcaseBusiness
-                      size={22}
-                      className={
-                        form.role === "RECRUITER"
-                          ? "text-blue-600"
-                          : "text-gray-500"
-                      }
-                    />
-                  </div>
-                  <span className="font-semibold text-sm text-gray-800">
-                    Recruiter
-                  </span>
-                  <span className="text-[11px] text-gray-500 text-center leading-snug">
-                    I want to hire and
-                    <br />
-                    find great talent
-                  </span>
-                </label>
+              {/* Divider */}
+              <div className="flex items-center gap-3 anim-fade-up d5">
+                <div className="flex-1 h-px bg-gray-100" />
+                <span className="text-xs text-gray-400 font-medium">
+                  or continue with
+                </span>
+                <div className="flex-1 h-px bg-gray-100" />
               </div>
-            </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-[40px] lg:h-[40px] rounded-xl font-semibold text-sm text-white transition-all duration-200
-              bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-500
-              hover:shadow-[0_12px_35px_rgba(37,99,235,0.45)]
-              shadow-[0_8px_25px_rgba(37,99,235,0.35)]
-              active:scale-[0.98]"
-            >
-              {loading ? (
-                <>
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
+              {/* Google */}
+              <div className="anim-fade-up d6">
+                <button
+                  type="button"
+                  className="btn-google w-full h-[46px] flex items-center justify-center gap-3
+                    text-sm font-semibold text-gray-600 hover:text-gray-800"
+                >
+                  <svg width="18" height="18" viewBox="0 0 48 48">
+                    <path
+                      fill="#EA4335"
+                      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
                     />
                     <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
+                      fill="#4285F4"
+                      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
                     />
                   </svg>
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </button>
+                  Continue with Google
+                </button>
+              </div>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">or continue with</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            {/* Google */}
-            <button
-              type="button"
-              className="w-full h-[40px] lg:h-[40px] border border-gray-200 rounded-xl flex items-center justify-center gap-3
-                text-sm font-medium text-gray-700 hover:bg-gray-50 active:scale-[0.99] transition-all"
-            >
-              <svg width="18" height="18" viewBox="0 0 48 48">
-                <path
-                  fill="#EA4335"
-                  d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-                />
-                <path
-                  fill="#4285F4"
-                  d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-                />
-              </svg>
-              Continue with Google
-            </button>
-
-            {/* Security note */}
-            <div className="flex items-center justify-center gap-1.5 pt-1">
-              <ShieldCheck size={14} className="text-gray-400" />
-              <span className="text-xs text-gray-400">
-                Your data is secure and protected
-              </span>
-            </div>
-          </form>
+              {/* Security */}
+              <div className="flex items-center justify-center gap-2 anim-fade-up d6">
+                <ShieldCheck size={13} className="text-gray-300" />
+                <span className="text-xs text-gray-400">
+                  Your data is secure and protected
+                </span>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
