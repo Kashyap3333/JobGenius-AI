@@ -48,6 +48,14 @@ User → Login → Add Skills → Job Matching Engine → Match % → Skill Gap 
 - Returns matched skills, missing skills, and AI-generated recommendations
 - Recommendations generated only when ATS score < 90 and missing skills exist
 - Powered by `ResumeAnalyzerPage` on the frontend
+- Experience extracted as integer years (0 = Fresher, 1+ = years of experience)
+
+### ATS Score on Recruiter Side
+
+- Recruiters see each applicant's ATS score directly in the applicants table
+- ATS score is computed at application time and stored with the application
+- Score displayed as a color-coded badge (green/yellow/red) based on threshold
+- Recruiter can compare candidates side-by-side using their ATS scores
 
 ### Recommendations
 
@@ -330,7 +338,7 @@ http://localhost:8080/api
 | extractedSkills | String[] | Skills detected in the resume                       |
 | matchedSkills   | String[] | Skills matching the job requirements                |
 | missingSkills   | String[] | Skills required by the job but absent in the resume |
-| experience      | String   | Experience summary extracted by AI                  |
+| experienceYears | Integer  | Years of experience extracted by AI (0 = Fresher)   |
 | education       | String   | Education summary extracted by AI                   |
 | suggestedRoles  | String[] | AI-suggested job roles based on resume content      |
 | recommendations | String[] | Up to 5 AI tips to improve the score (when < 90)    |
@@ -415,10 +423,12 @@ http://localhost:8080/api
 
 Protected routes use:
 
-- ProtectedRoute component
-- JWT token from localStorage
+- `ProtectedRoute` component — checks JWT token **and** user role
+- Recruiter routes enforce `role="RECRUITER"`, candidate routes enforce `role="CANDIDATE"`
+- Wrong-role access redirects to the user's own dashboard (not login)
+- Prevents back-button cross-role navigation after logout
 
-Unauthorized users redirect to:
+Unauthorized users (no token) redirect to:
 
 - /login
 
@@ -435,6 +445,7 @@ user_skills
 jobs
 job_skills
 applications
+resumes
 
 ## System Architecture
 
