@@ -20,4 +20,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     long countByJobId(@Param("jobId") Long jobId);
 
     List<Application> findBySelectedResume_Id(Long resumeId);
+
+    List<Application> findByJobIdOrderByAtsScoreDesc(Long jobId);
+    List<Application> findByJobIdOrderByAtsScoreAsc(Long jobId);
 }

@@ -42,4 +42,12 @@ public class Application {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id")
     private Resume selectedResume;
+
+    private Integer atsScore;
+
+    @Column(columnDefinition = "TEXT")
+    private String matchedSkills;  
+
+    @Column(columnDefinition = "TEXT")
+    private String missingSkills;   
 }

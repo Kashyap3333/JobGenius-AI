@@ -13,6 +13,7 @@ import com.jobmatcher.jobmatcher_backend.repository.ApplicationRepository;
 import com.jobmatcher.jobmatcher_backend.repository.JobRepository;
 import com.jobmatcher.jobmatcher_backend.repository.ResumeRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,9 @@ public class ApplicationService {
 
     @Autowired
     private ResumeRepository resumeRepository;
+
+    @Autowired
+    private ATSApplicationService atsApplicationService;
 
     public ApplicationResponse applyForJob(Long jobId, ApplicationRequest request, String candidateEmail) {
         User candidate = userRepository.findByEmail(candidateEmail)
@@ -67,7 +71,15 @@ public class ApplicationService {
             }
             application.setSelectedResume(resume);
         }
-
+        if (request != null && request.getSelectedResumeId() != null) {
+            resumeRepository.findById(request.getSelectedResumeId())
+                    .ifPresent(resume -> {
+                        List<String> jobSkills = job.getSkills().stream()
+                                .map(s -> s.getName())   // adjust to your Skill field name
+                                .collect(Collectors.toList());
+                        atsApplicationService.attachATSSnapshot(application, resume, jobSkills, job.getTitle());
+                    });
+        }
         return new ApplicationResponse(applicationRepository.save(application));
     }
 
@@ -146,5 +158,22 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return applicationRepository.findByCandidateIdAndJobId(candidate.getId(), jobId)
                 .orElse(null);
+    }
+    public List<ApplicationResponse> getApplicantsSorted(Long jobId, String sort) {
+        List<Application> applications;
+        switch (sort) {
+            case "ats_desc":
+                applications = applicationRepository.findByJobIdOrderByAtsScoreDesc(jobId);
+                break;
+            case "ats_asc":
+                applications = applicationRepository.findByJobIdOrderByAtsScoreAsc(jobId);
+                break;
+            default:
+                applications = applicationRepository.findByJobId(jobId);
+                break;
+        }
+        return applications.stream()
+                .map(ApplicationResponse::new)
+                .collect(Collectors.toList());
     }
 }

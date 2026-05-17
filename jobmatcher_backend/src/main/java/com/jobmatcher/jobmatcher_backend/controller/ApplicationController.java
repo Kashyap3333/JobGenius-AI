@@ -39,9 +39,12 @@ public class ApplicationController {
     @GetMapping("/job/{jobId}")
     public ResponseEntity<List<ApplicationResponse>> getApplicationsForJob(
             @PathVariable Long jobId,
+            @RequestParam(value = "sort", required = false) String sort,
             Authentication authentication) {
-        return ResponseEntity.ok(
-                applicationService.getApplicationsForJob(jobId, authentication.getName()));
+        if (sort != null) {
+            return ResponseEntity.ok(applicationService.getApplicantsSorted(jobId, sort));
+        }
+        return ResponseEntity.ok(applicationService.getApplicationsForJob(jobId, authentication.getName()));
     }
 
     @PutMapping("/{applicationId}/status")
@@ -75,4 +78,5 @@ public class ApplicationController {
         }
         return ResponseEntity.ok(result);
     }
+  
 }

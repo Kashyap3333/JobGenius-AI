@@ -4,7 +4,9 @@ import com.jobmatcher.jobmatcher_backend.model.Application;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Data
@@ -27,6 +29,9 @@ public class ApplicationResponse {
     private Long selectedResumeId;
     private String selectedResumeFileName;
     private String selectedResumeUrl;
+    private Integer      atsScore;
+private List<String> matchedSkills;
+private List<String> missingSkills;
 
     public ApplicationResponse(Application application) {
         this.id = application.getId();
@@ -47,5 +52,17 @@ public class ApplicationResponse {
             this.selectedResumeFileName = application.getSelectedResume().getOriginalFileName();
             this.selectedResumeUrl = application.getSelectedResume().getResumeUrl();
         }
+        this.atsScore      = application.getAtsScore();
+        this.matchedSkills = parseSkills(application.getMatchedSkills());
+        this.missingSkills = parseSkills(application.getMissingSkills());
     }
+
+    private List<String> parseSkills(String json) {
+    if (json == null || json.isBlank()) return List.of();
+    try {
+        return new ObjectMapper().readValue(json, new TypeReference<List<String>>() {});
+    } catch (Exception e) {
+        return List.of();
+    }
+}
 }
