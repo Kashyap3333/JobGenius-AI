@@ -11,6 +11,7 @@ import {
   LogOut,
   User,
   Settings,
+  FileSearch,
 } from "lucide-react";
 import logo from "../../assets/Images/Horizontal_NOBG_Logo.png";
 import API from "../../services/api";
@@ -34,10 +35,10 @@ export default function CandidateNavbar() {
 
   const navLinks = [
     { to: "/find-jobs", label: "Find Jobs", icon: Search },
-    { to: "/skill-management", label: "Skill Management", icon: Layers },
+    { to: "/resume-analyzer", label: "Resume Analyzer", icon: FileSearch },
     { to: "/skill-gap", label: "Skill Gap", icon: BarChart2 },
     { to: "/my-applications", label: "My Applications", icon: ClipboardCheck },
-    { to: "/resume-analyzer", label: "Resume Analyzer", icon: Settings },
+    { to: "/skill-management", label: "Skill Management", icon: Layers },
   ];
 
   const isActive = (path) => location.pathname.startsWith(path);

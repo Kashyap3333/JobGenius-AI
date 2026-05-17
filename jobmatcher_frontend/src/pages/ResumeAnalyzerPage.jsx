@@ -45,6 +45,15 @@ function fmtDate(d) {
   });
 }
 
+function fmtExp(v) {
+  if (v == null || v === "") return "Not specified";
+  const n = Number(v);
+  if (n === 0) return "Fresher";
+  if (n === 1) return "1 Year";
+  if (n >= 5) return `${n}+ Years`;
+  return `${n} Years`;
+}
+
 // ─────────────────────────────────────────────────────────────
 // Skeleton
 // ─────────────────────────────────────────────────────────────
@@ -374,9 +383,9 @@ function JobCard({ job, selected, onClick }) {
             <MapPin size={9} /> {job.location}
           </span>
         )}
-        {job.experienceRequired && (
+        {job.experienceRequired != null && (
           <span className="flex items-center gap-1 text-[10px] text-gray-400">
-            <Clock size={9} /> {job.experienceRequired}+ yrs
+            <Clock size={9} /> {fmtExp(job.experienceRequired)}
           </span>
         )}
         {job.workMode && (
@@ -892,7 +901,7 @@ export default function ResumeAnalyzerPage() {
                   </div>
                   <div className="p-6 flex flex-col gap-4">
                     {[
-                      { label: "Experience", value: result.experience },
+                      { label: "Experience", value: fmtExp(result.experienceYears) },
                       { label: "Education", value: result.education },
                     ].map(({ label, value }) => (
                       <div

@@ -39,7 +39,8 @@ public class Job {
     @Column(nullable = false)
     @NotBlank
     private String companyName;
-    private String experienceRequired;
+    @Min(0)
+    private Integer experienceRequired;
     @Enumerated(EnumType.STRING)
     private WorkMode workMode;
     @Min(0)

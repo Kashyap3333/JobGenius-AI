@@ -98,15 +98,15 @@ function StatCard({
 // ── Status Badge ──────────────────────────────────────────────
 function StatusBadge({ status }) {
   const map = {
-    Active: "bg-green-50 text-green-600 border-green-200",
-    Paused: "bg-amber-50 text-amber-600 border-amber-200",
-    Closed: "bg-gray-100 text-gray-500 border-gray-200",
+    ACTIVE: "bg-green-50 text-green-600 border-green-200",
+    CLOSED: "bg-red-50 text-red-700 border-red-200",
   };
+  const key = status?.toUpperCase();
   return (
     <span
-      className={`inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${map[status] || map.Closed}`}
+      className={`inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${map[key] || map.ACTIVE}`}
     >
-      {status}
+      {key === "CLOSED" ? "Closed" : "Active"}
     </span>
   );
 }
@@ -214,11 +214,14 @@ export default function RecruiterDashboard() {
 
   const totalJobs = jobs.length;
   const activeJobs = jobs.filter(
-    (j) => (j.status || "Active") === "Active",
+    (j) => (j.status || "ACTIVE").toUpperCase() === "ACTIVE",
   ).length;
   const totalApplications = jobs.reduce((s, j) => s + (j.applicationCount || 0), 0);
 
+  const isExpired = (d) => d && new Date(d) < new Date(new Date().toDateString());
+
   const filteredJobs = jobs.filter((j) => {
+    if (isExpired(j.lastDateToApply)) return false;
     const q = searchQuery.toLowerCase();
     return (
       j.title?.toLowerCase().includes(q) ||

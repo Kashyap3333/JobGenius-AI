@@ -17,7 +17,7 @@ public class ExtractedResumeData {
 
     private List<String> skills;
 
-    private String experience;
+    private Integer experienceYears;
 
     private String education;
 

@@ -71,6 +71,15 @@ function fmtSalary(s) {
   return `₹${s.toLocaleString("en-IN")}/month • ${yearlyFormatted}`;
 }
 
+function fmtExp(v) {
+  if (v == null || v === "") return "Not specified";
+  const n = Number(v);
+  if (n === 0) return "Fresher";
+  if (n === 1) return "1 Year";
+  if (n >= 5) return `${n}+ Years`;
+  return `${n} Years`;
+}
+
 function getSkillNames(job) {
   const raw = job?.requiredSkills || job?.skills || [];
   return raw
@@ -819,9 +828,9 @@ export default function JobDetailPage() {
                         <IndianRupee size={12} /> {fmtSalary(job.salary)}
                       </span>
                     )}
-                    {job.experienceRequired && (
+                    {job.experienceRequired != null && (
                       <span className="flex items-center gap-1 text-sm text-gray-500">
-                        <Users size={13} /> {job.experienceRequired} Experience
+                        <Users size={13} /> {fmtExp(job.experienceRequired)} Experience
                       </span>
                     )}
                   </div>
@@ -928,9 +937,9 @@ export default function JobDetailPage() {
                     {fmtSalary(job.salary)}
                   </span>
                 )}
-                {job.experienceRequired && (
+                {job.experienceRequired != null && (
                   <span className="px-3 py-1 bg-orange-50 text-orange-700 text-xs font-semibold rounded-full border border-orange-100">
-                    {job.experienceRequired || "Not specified"}
+                    {fmtExp(job.experienceRequired)}
                   </span>
                 )}
               </div>
@@ -1035,7 +1044,7 @@ export default function JobDetailPage() {
                 <MetaItem
                   icon={Users}
                   label="Experience Required"
-                  value={job.experienceRequired || "Not specified"}
+                  value={fmtExp(job.experienceRequired)}
                 />
                 {job.recruiterId && (
                   <MetaItem

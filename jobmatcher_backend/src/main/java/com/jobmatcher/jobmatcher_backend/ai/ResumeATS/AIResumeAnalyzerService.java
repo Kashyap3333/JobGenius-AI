@@ -63,7 +63,7 @@ public class AIResumeAnalyzerService {
 
             ExtractedResumeData data = new ExtractedResumeData();
             data.setSkills(castToStringList(parsed.get("skills")));
-            data.setExperience(String.valueOf(parsed.getOrDefault("experience", "Not specified")));
+            data.setExperienceYears(toInt(parsed.getOrDefault("experienceYears", 0)));
             data.setEducation(String.valueOf(parsed.getOrDefault("education",  "Not specified")));
             data.setSuggestedRoles(castToStringList(parsed.get("roles")));
             data.setRawText(resumeText);

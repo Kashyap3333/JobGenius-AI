@@ -75,6 +75,15 @@ function fmtDate(d) {
   }
 }
 
+function fmtExp(v) {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  if (n === 0) return "Fresher";
+  if (n === 1) return "1 Year";
+  if (n >= 5) return `${n}+ Years`;
+  return `${n} Years`;
+}
+
 const JOB_TYPE_STYLE = {
   FULL_TIME: { bg: "#EDE9FE", text: "#5B21B6" },
   PART_TIME: { bg: "#FEF3C7", text: "#92400E" },
@@ -461,10 +470,10 @@ function JobCard({
                     {job.workMode.replace(/_/g, " ")}
                   </span>
                 )}
-                {job.experienceRequired && (
+                {fmtExp(job.experienceRequired) && (
                   <span className="flex items-center gap-1">
                     <Briefcase size={10} />
-                    {job.experienceRequired}
+                    {fmtExp(job.experienceRequired)}
                   </span>
                 )}
               </div>

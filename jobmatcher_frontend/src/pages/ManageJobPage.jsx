@@ -19,6 +19,15 @@ import {
 } from "lucide-react";
 import API from "../services/api";
 
+const fmtExp = (v) => {
+  if (v == null || v === "") return "Not specified";
+  const n = Number(v);
+  if (n === 0) return "Fresher";
+  if (n === 1) return "1 Year";
+  if (n >= 5) return `${n}+ Years`;
+  return `${n} Years`;
+};
+
 // ─────────────────────────────────────────────────────────────
 // Badge helpers
 // ─────────────────────────────────────────────────────────────
@@ -40,8 +49,7 @@ const WORK_MODE_COLORS = {
 
 const STATUS_COLORS = {
   ACTIVE: { bg: "#F0FDF4", text: "#166534", border: "#BBF7D0" },
-  PAUSED: { bg: "#FFFBEB", text: "#92400E", border: "#FDE68A" },
-  CLOSED: { bg: "#F9FAFB", text: "#6B7280", border: "#E5E7EB" },
+  CLOSED: { bg: "#FEF2F2", text: "#991B1B", border: "#FECACA" },
 };
 
 function Badge({ value, map }) {
@@ -304,6 +312,11 @@ export default function ManageJobs() {
     fetchJobs();
   }, []);
 
+  const isExpired = (d) => {
+    if (!d) return false;
+    return new Date(d) < new Date(new Date().toDateString());
+  };
+
   // ── Filtered + paginated ───────────────────────────────────
   const filtered = jobs.filter((j) => {
     const q = search.toLowerCase();
@@ -318,6 +331,12 @@ export default function ManageJobs() {
     const matchStatus =
       !statusFilter || j.status?.toUpperCase() === statusFilter.toUpperCase();
     return matchSearch && matchType && matchMode && matchStatus;
+  });
+
+  filtered.sort((a, b) => {
+    const aExpired = isExpired(a.lastDateToApply) ? 1 : 0;
+    const bExpired = isExpired(b.lastDateToApply) ? 1 : 0;
+    return aExpired - bExpired;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
@@ -364,7 +383,7 @@ export default function ManageJobs() {
   };
 
   const isExpiringSoon = (d) => {
-    if (!d) return false;
+    if (!d || isExpired(d)) return false;
     const diff = (new Date(d) - new Date()) / (1000 * 60 * 60 * 24);
     return diff >= 0 && diff <= 7;
   };
@@ -431,7 +450,7 @@ export default function ManageJobs() {
             <FilterDropdown
               label="Status"
               value={statusFilter}
-              options={["ACTIVE", "PAUSED", "CLOSED"]}
+              options={["ACTIVE", "CLOSED"]}
               onChange={(v) => {
                 setStatusFilter(v);
                 setPage(1);
@@ -545,16 +564,21 @@ export default function ManageJobs() {
 
                       {/* Experience */}
                       <td className="px-4 py-3.5 text-sm text-gray-600 whitespace-nowrap">
-                        {job.experienceRequired || "—"}
+                        {fmtExp(job.experienceRequired)}
                       </td>
 
                       {/* Last Date */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span
-                          className={`text-sm font-medium ${isExpiringSoon(job.lastDateToApply) ? "text-red-500" : "text-gray-700"}`}
+                          className={`text-sm font-medium ${isExpired(job.lastDateToApply) ? "text-gray-400 line-through" : isExpiringSoon(job.lastDateToApply) ? "text-red-500" : "text-gray-700"}`}
                         >
                           {fmt(job.lastDateToApply)}
                         </span>
+                        {isExpired(job.lastDateToApply) && (
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            Deadline passed
+                          </p>
+                        )}
                         {isExpiringSoon(job.lastDateToApply) && (
                           <p className="text-[10px] text-red-400 mt-0.5">
                             Expiring soon
@@ -564,7 +588,14 @@ export default function ManageJobs() {
 
                       {/* Status */}
                       <td className="px-4 py-3.5">
-                        <StatusBadge value={job.status || "ACTIVE"} />
+                        <StatusBadge
+                          value={
+                            job.status ||
+                            (isExpired(job.lastDateToApply)
+                              ? "CLOSED"
+                              : "ACTIVE")
+                          }
+                        />
                       </td>
 
                       {/* Applicants — NEW */}

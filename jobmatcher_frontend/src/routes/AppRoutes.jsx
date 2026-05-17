@@ -39,7 +39,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* ── Recruiter — all pages share RecruiterLayout (Navbar) ── */}
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute role="RECRUITER" />}>
         <Route element={<RecruiterLayout />}>
           <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
           <Route path="/post-job" element={<PostJobPage />} />
@@ -53,7 +53,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* ── Candidate — all pages share CandidateLayout (Navbar) ── */}
-      <Route element={<ProtectedRoute />}>
+      <Route element={<ProtectedRoute role="CANDIDATE" />}>
         <Route element={<CandidateLayout />}>
           <Route path="/find-jobs" element={<JobListingPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />

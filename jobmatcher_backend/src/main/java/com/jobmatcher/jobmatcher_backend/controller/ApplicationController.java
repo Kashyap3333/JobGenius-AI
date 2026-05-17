@@ -68,15 +68,10 @@ public class ApplicationController {
     public ResponseEntity<Map<String, Object>> checkApplied(
             @PathVariable Long jobId,
             Authentication authentication) {
-        var application = applicationService.getApplication(jobId, authentication.getName());
-        Map<String, Object> result = new java.util.HashMap<>();
-        result.put("applied", application != null);
-        result.put("applicationId", application != null ? application.getId() : null);
-        if (application != null && application.getSelectedResume() != null) {
-            result.put("resumeFileName", application.getSelectedResume().getOriginalFileName());
-            result.put("resumeUrl", application.getSelectedResume().getResumeUrl());
+        if (authentication == null) {
+            return ResponseEntity.ok(Map.of("applied", false, "applicationId", null));
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(applicationService.checkApplicationDetails(jobId, authentication.getName()));
     }
   
 }

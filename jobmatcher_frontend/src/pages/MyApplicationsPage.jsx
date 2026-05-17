@@ -219,8 +219,8 @@ function AppliedJobsTab({ matchMap }) {
   return (
     <>
       {/* Table header — desktop */}
-      <div className="hidden md:grid grid-cols-[2.4fr_1.1fr_1fr_0.7fr_1.2fr_1fr] gap-6 px-6 pb-3 border-b border-gray-100 items-center">
-        {["Job", "Company", "Applied On", "Match", "Resume", "Action"].map(
+      <div className="hidden md:grid grid-cols-[2.4fr_1.1fr_1fr_0.9fr_0.7fr_1.2fr_1fr] gap-6 px-6 pb-3 border-b border-gray-100 items-center">
+        {["Job", "Company", "Applied On", "Status", "Match", "Resume", "Action"].map(
           (h) => (
             <span
               key={h}
@@ -243,7 +243,7 @@ function AppliedJobsTab({ matchMap }) {
           return (
             <div
               key={app.id}
-              className="grid grid-cols-1 md:grid-cols-[2.4fr_1.1fr_1fr_0.7fr_1.2fr_1fr] gap-6 items-center px-6 py-5 hover:bg-gray-50 transition-all rounded-xl"
+              className="grid grid-cols-1 md:grid-cols-[2.4fr_1.1fr_1fr_0.9fr_0.7fr_1.2fr_1fr] gap-6 items-center px-6 py-5 hover:bg-gray-50 transition-all rounded-xl"
             >
               {/* Job info */}
               <div className="flex items-center gap-3">
@@ -292,6 +292,11 @@ function AppliedJobsTab({ matchMap }) {
               {/* Applied On */}
               <div className="hidden md:flex items-center">
                 <p className="text-sm text-gray-600">{date}</p>
+              </div>
+
+              {/* Status */}
+              <div className="hidden md:flex items-center">
+                <StatusBadge status={app.status} />
               </div>
 
               {/* Match */}

@@ -138,7 +138,7 @@ const EMPTY_FORM = {
   jobType: "",
   workMode: "",
   salary: "",
-  experienceRequired: "",
+  experienceRequired: "",  // "" = not set, number = years
   lastDateToApply: "",
   description: "",
 };
@@ -273,6 +273,7 @@ export default function PostJobPage({
     const payload = {
       ...form,
       salary: Number(form.salary),
+      experienceRequired: form.experienceRequired !== "" ? Number(form.experienceRequired) : null,
       skillIds: selectedSkills.map((s) => s.id),
     };
 
@@ -417,14 +418,30 @@ export default function PostJobPage({
 
         {/* Row 3: Experience + Last Date */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-5">
-          <TextField
-            label="Experience Required"
-            name="experienceRequired"
-            placeholder="e.g. 2 - 4 years"
-            form={form}
-            errors={errors}
-            onChange={handleChange}
-          />
+          {/* Experience Required */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              Experience Required
+            </label>
+            <select
+              name="experienceRequired"
+              value={form.experienceRequired}
+              onChange={handleChange}
+              className={`border rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all appearance-none cursor-pointer
+                ${errors.experienceRequired ? "border-red-400" : "border-gray-200"}`}
+            >
+              <option value="">Select experience level</option>
+              <option value="0">Fresher (0 years)</option>
+              <option value="1">1 Year</option>
+              <option value="2">2 Years</option>
+              <option value="3">3 Years</option>
+              <option value="4">4 Years</option>
+              <option value="5">5+ Years</option>
+            </select>
+            {errors.experienceRequired && (
+              <p className="text-red-500 text-xs mt-0.5">{errors.experienceRequired}</p>
+            )}
+          </div>
 
           {/* Last Date to Apply */}
           <div className="flex flex-col gap-1.5">

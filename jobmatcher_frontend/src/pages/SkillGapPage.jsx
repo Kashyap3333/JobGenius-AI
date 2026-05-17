@@ -61,6 +61,15 @@ function fmtDate(d) {
   }
 }
 
+function fmtExp(v) {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  if (n === 0) return "Fresher";
+  if (n === 1) return "1 Year";
+  if (n >= 5) return `${n}+ Years`;
+  return `${n} Years`;
+}
+
 function matchColor(pct) {
   if (pct >= 80) return { text: "#16a34a", bg: "#F0FDF4", border: "#BBF7D0" };
   if (pct >= 60) return { text: "#2563eb", bg: "#EFF6FF", border: "#BFDBFE" };
@@ -458,7 +467,7 @@ export default function SkillGapPage() {
 
                   {/* Right */}
                   <div className="flex items-center gap-8 shrink-0">
-                    {job.experienceRequired && (
+                    {fmtExp(job.experienceRequired) && (
                       <div>
                         <p className="text-xs text-gray-400 mb-1">Experience</p>
 
@@ -466,7 +475,7 @@ export default function SkillGapPage() {
                           <Users size={15} className="text-gray-400" />
 
                           <p className="text-sm font-semibold text-gray-700">
-                            {job.experienceRequired}
+                            {fmtExp(job.experienceRequired)}
                           </p>
                         </div>
                       </div>

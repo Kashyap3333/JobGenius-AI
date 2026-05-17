@@ -44,8 +44,12 @@ public class JobService {
     }
 
     public List<JobResponse> getAllJobs() {
-        List<Job> jobs = jobRepository.findAll();
-        return jobs.stream().map(JobResponse::new).toList();
+        LocalDate today = LocalDate.now();
+        return jobRepository.findAll()
+                .stream()
+                .filter(job -> job.getLastDateToApply() != null && !job.getLastDateToApply().isBefore(today))
+                .map(JobResponse::new)
+                .toList();
     }
 
     public JobResponse getJobById(Long jobId) {

@@ -27,13 +27,10 @@ export default function EditJobPage() {
 
         // Normalize requiredSkills → [{id, name}]
         // Backend may return [string] or [{id, name}] or [{skillName}]
-        const skills = (job.skills || []).map((s) => {
-          if (typeof s === "string") return { id: s, name: s };
-          return {
-            id: s.id ?? s.name ?? s.skillName,
-            name: s.name ?? s.skillName ?? s.id,
-          };
-        });
+        const skills = (job.skills || []).map((s) => ({
+          id: s.id,
+          name: s.name,
+        }));
 
         // Normalize lastDateToApply to yyyy-MM-dd for <input type="date">
         let lastDate = job.lastDateToApply || "";
@@ -48,7 +45,7 @@ export default function EditJobPage() {
           jobType: job.jobType || "",
           workMode: job.workMode || "",
           salary: job.salary != null ? String(job.salary) : "",
-          experienceRequired: job.experienceRequired || "",
+          experienceRequired: job.experienceRequired != null ? String(job.experienceRequired) : "",
           lastDateToApply: lastDate,
           description: job.description || "",
           requiredSkills: skills,

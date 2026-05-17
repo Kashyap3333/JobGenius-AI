@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -21,14 +22,15 @@ public class JobResponse {
     private String jobType;
     private String workMode;
     private Integer salary;
-    private String experienceRequired;
+    private Integer experienceRequired;
 
     private LocalDate postedDate;
     private LocalDate lastDateToApply;
     private Long recruiterId;
 
-    private List<String> skills;
+    private List<Map<String, Object>> skills;
     private long applicationCount;
+    private String status;
 
     public JobResponse(Job job) {
         this.id = job.getId();
@@ -45,8 +47,13 @@ public class JobResponse {
         this.recruiterId = job.getCreatedBy().getId();
 
         this.skills = job.getSkills() != null
-                ? job.getSkills().stream().map(Skill::getName).toList()
+                ? job.getSkills().stream()
+                        .map(s -> Map.<String, Object>of("id", s.getId(), "name", s.getName()))
+                        .toList()
                 : List.of();
+
+        this.status = (job.getLastDateToApply() != null && job.getLastDateToApply().isBefore(LocalDate.now()))
+                ? "CLOSED" : "ACTIVE";
     }
 
 }

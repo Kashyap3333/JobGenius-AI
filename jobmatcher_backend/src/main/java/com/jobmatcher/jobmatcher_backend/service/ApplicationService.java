@@ -159,6 +159,25 @@ public class ApplicationService {
         return applicationRepository.findByCandidateIdAndJobId(candidate.getId(), jobId)
                 .orElse(null);
     }
+
+    public java.util.Map<String, Object> checkApplicationDetails(Long jobId, String candidateEmail) {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        User candidate = userRepository.findByEmail(candidateEmail).orElse(null);
+        if (candidate == null) {
+            result.put("applied", false);
+            result.put("applicationId", null);
+            return result;
+        }
+        Application application = applicationRepository.findByCandidateIdAndJobId(candidate.getId(), jobId)
+                .orElse(null);
+        result.put("applied", application != null);
+        result.put("applicationId", application != null ? application.getId() : null);
+        if (application != null && application.getSelectedResume() != null) {
+            result.put("resumeFileName", application.getSelectedResume().getOriginalFileName());
+            result.put("resumeUrl", application.getSelectedResume().getResumeUrl());
+        }
+        return result;
+    }
     public List<ApplicationResponse> getApplicantsSorted(Long jobId, String sort) {
         List<Application> applications;
         switch (sort) {

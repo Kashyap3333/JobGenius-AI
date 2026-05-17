@@ -72,7 +72,9 @@ public class ResumeAnalyzerController {
                 JobResponse job = jobService.getJobById(jobId);
                 if (job != null) {
                     targetRole = job.getTitle();
-                    jobSkills  = job.getSkills(); // already List<String>
+                    jobSkills  = job.getSkills().stream()
+                            .map(s -> (String) s.get("name"))
+                            .toList();
                 }
             }
 
@@ -105,7 +107,7 @@ public class ResumeAnalyzerController {
             ATSAnalysisResponse response = new ATSAnalysisResponse();
             response.setSuccess(true);
             response.setExtractedSkills(extracted.getSkills());
-            response.setExperience(extracted.getExperience());
+            response.setExperienceYears(extracted.getExperienceYears());
             response.setEducation(extracted.getEducation());
             response.setSuggestedRoles(extracted.getSuggestedRoles());
             response.setAtsScore(atsResult.atsScore);

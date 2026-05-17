@@ -17,7 +17,7 @@ public class ATSAnalysisResponse {
 
     private List<String> extractedSkills;
 
-    private String experience;
+    private Integer experienceYears;
 
     private String education;
 
