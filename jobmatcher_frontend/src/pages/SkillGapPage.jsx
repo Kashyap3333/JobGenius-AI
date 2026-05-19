@@ -222,6 +222,8 @@ export default function SkillGapPage() {
   const [statusFilter, setStatus] = useState("ALL");
   const [sortBy, setSortBy] = useState("match");
   const [viewMode, setViewMode] = useState("list");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 6;
 
   // ─────────────────────────────────────────────────────────────────────────
   // 1. GET /jobs — populate selector
@@ -357,6 +359,12 @@ export default function SkillGapPage() {
       list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
     return list;
   }, [allJobs, applications, search, statusFilter, sortBy, matchMap]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => { setPage(1); }, [search, statusFilter, sortBy]);
+
+  const totalPages = Math.ceil(processedApps.length / PAGE_SIZE);
+  const pagedApps = processedApps.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
@@ -703,17 +711,18 @@ export default function SkillGapPage() {
               </div>
             ) : (
               <div
-                className={`p-4 ${viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" : "flex flex-col gap-2"}`}
+                className={`p-4 ${viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" : "flex flex-col divide-y divide-gray-100"}`}
               >
-                {processedApps.map((app) => {
+                {pagedApps.map((app) => {
                   const mc = matchColor(app._pct);
                   return viewMode === "list" ? (
                     <button
                       key={app.id}
                       onClick={() => navigate(`/skill-gap/${app.jobId}`)}
-                      className="w-full flex items-center gap-4 px-5 py-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-md transition-all group text-left"
+                      className="w-full flex items-center gap-4 px-4 py-4 bg-white hover:bg-blue-50/40 transition-all group text-left"
                     >
-                      <div className="w-11 h-11 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
+                      {/* Avatar */}
+                      <div className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
                         {app.companyLogo ? (
                           <img
                             src={app.companyLogo}
@@ -721,60 +730,59 @@ export default function SkillGapPage() {
                             className="w-full h-full object-contain p-1"
                           />
                         ) : (
-                          <span className="text-base font-bold text-gray-300">
+                          <span className="text-sm font-bold text-gray-400">
                             {(app.companyName || "?")[0].toUpperCase()}
                           </span>
                         )}
                       </div>
+
+                      {/* Job info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                        <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
                           {app.jobTitle || app.title}
                         </p>
-                        <div className="flex items-center flex-wrap gap-x-2.5 gap-y-0.5 mt-0.5 text-xs text-gray-500">
-                          {app.companyName && <span>{app.companyName}</span>}
+                        <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 mt-0.5 text-xs text-gray-500">
+                          {app.companyName && (
+                            <span className="font-medium text-gray-600">{app.companyName}</span>
+                          )}
                           {app.location && (
                             <>
-                              <span className="text-gray-200">·</span>
-                              <span className="flex items-center gap-1">
-                                <MapPin size={10} />
+                              <span className="text-gray-300">·</span>
+                              <span className="flex items-center gap-0.5">
+                                <MapPin size={10} className="text-gray-400" />
                                 {app.location}
                               </span>
                             </>
                           )}
                         </div>
                       </div>
+
+                      {/* Status + date */}
                       {app.status && (
                         <div className="hidden sm:flex flex-col items-end gap-1 shrink-0">
                           <StatusBadge status={app.status} />
-                          <span className="text-xs text-gray-400">
-                            {fmtDate(app.appliedAt)}
-                          </span>
+                          {app.appliedAt && (
+                            <span className="text-[11px] text-gray-400">
+                              {fmtDate(app.appliedAt)}
+                            </span>
+                          )}
                         </div>
                       )}
+
+                      {/* Match box */}
                       <div
-                        className="w-[70px] h-[70px] flex flex-col items-center justify-center rounded-xl shrink-0"
-                        style={{
-                          backgroundColor: mc.bg,
-                          border: `1px solid ${mc.border}`,
-                        }}
+                        className="w-16 h-16 flex flex-col items-center justify-center rounded-xl shrink-0 shadow-sm"
+                        style={{ backgroundColor: mc.bg, border: `1.5px solid ${mc.border}` }}
                       >
-                        <span
-                          className="text-base font-black leading-none"
-                          style={{ color: mc.text }}
-                        >
+                        <span className="text-base font-black leading-none" style={{ color: mc.text }}>
                           {app._pct}%
                         </span>
-                        <span
-                          className="text-[10px] font-semibold"
-                          style={{ color: mc.text }}
-                        >
+                        <span className="text-[10px] font-semibold mt-0.5" style={{ color: mc.text }}>
                           {matchLabel(app._pct)}
                         </span>
                       </div>
-                      <ChevronRight
-                        size={15}
-                        className="text-gray-300 group-hover:text-blue-500 transition-colors shrink-0"
-                      />
+
+                      <ChevronRight size={15} className="text-gray-300 group-hover:text-blue-500 transition-colors shrink-0" />
                     </button>
                   ) : (
                     <button
@@ -785,11 +793,7 @@ export default function SkillGapPage() {
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="w-12 h-12 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center overflow-hidden">
                           {app.companyLogo ? (
-                            <img
-                              src={app.companyLogo}
-                              alt={app.companyName}
-                              className="w-full h-full object-contain p-1"
-                            />
+                            <img src={app.companyLogo} alt={app.companyName} className="w-full h-full object-contain p-1" />
                           ) : (
                             <span className="text-lg font-bold text-gray-300">
                               {(app.companyName || "?")[0].toUpperCase()}
@@ -798,44 +802,19 @@ export default function SkillGapPage() {
                         </div>
                         <div
                           className="flex flex-col items-center px-2.5 py-1.5 rounded-xl"
-                          style={{
-                            backgroundColor: mc.bg,
-                            border: `1px solid ${mc.border}`,
-                          }}
+                          style={{ backgroundColor: mc.bg, border: `1px solid ${mc.border}` }}
                         >
-                          <span
-                            className="text-sm font-black leading-none"
-                            style={{ color: mc.text }}
-                          >
-                            {app._pct}%
-                          </span>
-                          <span
-                            className="text-[9px] font-semibold uppercase"
-                            style={{ color: mc.text }}
-                          >
-                            Match
-                          </span>
+                          <span className="text-sm font-black leading-none" style={{ color: mc.text }}>{app._pct}%</span>
+                          <span className="text-[9px] font-semibold uppercase" style={{ color: mc.text }}>Match</span>
                         </div>
                       </div>
                       <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
                         {app.jobTitle || app.title}
                       </p>
-                      <p className="text-xs text-gray-500 mb-3">
-                        {app.companyName}
-                      </p>
+                      <p className="text-xs text-gray-500 mb-3">{app.companyName}</p>
                       <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
-                        {app.status ? (
-                          <StatusBadge status={app.status} />
-                        ) : (
-                          <span className="text-xs text-gray-400">
-                            Not applied
-                          </span>
-                        )}
-                        {app.appliedAt && (
-                          <span className="text-xs text-gray-400">
-                            {fmtDate(app.appliedAt)}
-                          </span>
-                        )}
+                        {app.status ? <StatusBadge status={app.status} /> : <span className="text-xs text-gray-400">Not applied</span>}
+                        {app.appliedAt && <span className="text-xs text-gray-400">{fmtDate(app.appliedAt)}</span>}
                       </div>
                     </button>
                   );
@@ -843,20 +822,49 @@ export default function SkillGapPage() {
               </div>
             )}
 
-            {/* Footer count */}
+            {/* Footer: count + pagination */}
             {!jobsLoading && processedApps.length > 0 && (
-              <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+              <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between flex-wrap gap-2">
                 <p className="text-xs text-gray-400">
                   Showing{" "}
                   <span className="font-semibold text-gray-600">
-                    {processedApps.length}
+                    {Math.min((page - 1) * PAGE_SIZE + 1, processedApps.length)}–{Math.min(page * PAGE_SIZE, processedApps.length)}
                   </span>{" "}
                   of{" "}
-                  <span className="font-semibold text-gray-600">
-                    {allJobs.length}
-                  </span>{" "}
+                  <span className="font-semibold text-gray-600">{processedApps.length}</span>{" "}
                   jobs
                 </p>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      Prev
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`w-7 h-7 text-xs font-semibold rounded-lg border transition-all ${
+                          p === page
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

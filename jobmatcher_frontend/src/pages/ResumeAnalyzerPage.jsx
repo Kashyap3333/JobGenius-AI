@@ -397,15 +397,18 @@ function JobCard({ job, selected, onClick }) {
 
       {skills.length > 0 && (
         <div className="flex flex-wrap gap-1 max-w-full overflow-hidden">
-          {skills.slice(0, 4).map((s) => (
-            <span
-              key={s}
-              className="text-[10px] font-semibold px-2 py-0.5 rounded-full
-                bg-blue-50 text-blue-600 border border-blue-100"
-            >
-              {s}
-            </span>
-          ))}
+          {skills.slice(0, 4).map((s) => {
+            const label = typeof s === "object" ? s.name || s.id : s;
+            return (
+              <span
+                key={label}
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full
+                  bg-blue-50 text-blue-600 border border-blue-100"
+              >
+                {label}
+              </span>
+            );
+          })}
           {skills.length > 4 && (
             <span className="text-[10px] text-gray-400 self-center">
               +{skills.length - 4}

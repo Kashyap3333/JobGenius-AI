@@ -14,6 +14,8 @@ import com.jobmatcher.jobmatcher_backend.repository.JobRepository;
 import com.jobmatcher.jobmatcher_backend.repository.ResumeRepository;
 import com.jobmatcher.jobmatcher_backend.repository.UserRepository;
 import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 public class ApplicationService {
@@ -40,6 +43,9 @@ public class ApplicationService {
 
     @Autowired
     private ATSApplicationService atsApplicationService;
+
+    @Autowired
+    private  NotificationService notificationService;
 
     public ApplicationResponse applyForJob(Long jobId, ApplicationRequest request, String candidateEmail) {
         User candidate = userRepository.findByEmail(candidateEmail)
@@ -79,6 +85,17 @@ public class ApplicationService {
                                 .collect(Collectors.toList());
                         atsApplicationService.attachATSSnapshot(application, resume, jobSkills, job.getTitle());
                     });
+        }
+
+        try {
+            notificationService.sendApplicationConfirmation(
+                    candidate.getEmail(),
+                    candidate.getUsername() != null ? candidate.getUsername() : candidate.getEmail(),
+                    job.getTitle(),
+                    job.getCompanyName()
+            );
+        } catch (Exception e) {
+            log.warn("Application confirmation email failed for {}: {}", candidate.getEmail(), e.getMessage());
         }
         return new ApplicationResponse(applicationRepository.save(application));
     }
@@ -122,6 +139,21 @@ public class ApplicationService {
         }
 
         application.setStatus(request.getStatus());
+        Application saved = applicationRepository.save(application);
+
+        try {
+            User candidate = saved.getCandidate();
+            Job job = saved.getJob();
+            notificationService.sendStatusUpdateNotification(
+                    candidate.getEmail(),
+                    candidate.getUsername() != null ? candidate.getUsername() : candidate.getEmail(),
+                    job.getTitle(),
+                    job.getCompanyName(),
+                    request.getStatus().name()
+            );
+        } catch (Exception e) {
+            log.warn("Status email failed for application {}: {}", applicationId, e.getMessage());
+        }
         return new ApplicationResponse(applicationRepository.save(application));
     }
 

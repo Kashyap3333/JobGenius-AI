@@ -10,7 +10,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class AuthService {
 
@@ -26,17 +28,28 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private  NotificationService notificationService;
+
     public User register(User user) {
-        // Check if user with the same email already exists
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("User with this email is already exists");
         }
 
-        // Hash the password before saving
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user); // ← save first
 
+        try {
+            notificationService.sendWelcomeEmail(
+                    savedUser.getEmail(),
+                    savedUser.getUsername() != null ? savedUser.getUsername() : savedUser.getEmail()
+            );
+        } catch (Exception e) {
+            log.warn("Welcome email failed for {}: {}", savedUser.getEmail(), e.getMessage());
+        }
+
+        return savedUser;
     }
 
     public String login(LoginRequest request) {

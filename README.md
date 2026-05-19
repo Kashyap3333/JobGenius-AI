@@ -57,6 +57,32 @@ User → Login → Add Skills → Job Matching Engine → Match % → Skill Gap 
 - Score displayed as a color-coded badge (green/yellow/red) based on threshold
 - Recruiter can compare candidates side-by-side using their ATS scores
 
+### Email Notifications
+
+Automated HTML email notifications are sent at every key stage of the hiring pipeline via `NotificationService` → `EmailService`. Emails are **non-blocking** — failures are caught and logged as warnings so they never interrupt the user flow.
+
+| Trigger | Recipient | Subject |
+|---|---|---|
+| Successful registration | Candidate | Welcome to JobGenius 🚀 |
+| Job application submitted | Candidate | Application Received – `{job}` at `{company}` |
+| Status → `SCREENING` | Candidate | Your profile has been shortlisted – `{job}` |
+| Status → `INTERVIEW` | Candidate | Interview Round – `{job}` at `{company}` |
+| Status → `ACCEPTED` | Candidate | 🎉 Offer Letter – `{job}` at `{company}` |
+| Status → `REJECTED` | Candidate | Application Update – `{job}` at `{company}` |
+| Password reset *(future)* | User | Reset Your JobGenius Password |
+
+**Status dispatcher** — when a recruiter updates an application's status, `NotificationService.sendStatusUpdateNotification()` routes to the correct template:
+
+```
+SCREENING → sendScreeningNotification()
+INTERVIEW → sendInterviewNotification()
+ACCEPTED  → sendAcceptedNotification()
+REJECTED  → sendRejectedNotification()
+(other)   → debug log only, no email sent
+```
+
+All email HTML is built by `EmailTemplateUtil` and includes a direct link to the frontend (`app.frontend.url`).
+
 ### Recommendations
 
 - Missing skill suggestions
@@ -467,6 +493,17 @@ spring.datasource.username=postgres
 spring.datasource.password=your_password
 
 jwt.secret=your_jwt_secret
+
+# Email (SMTP — e.g. Gmail)
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_app_password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Frontend URL — embedded in notification emails
+app.frontend.url=http://localhost:5173
 
 # NVIDIA NIM — AI Resume Analyzer & Career Insights
 nvidia.nim.api.key=your_nvidia_nim_api_key
