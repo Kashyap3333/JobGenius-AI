@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,7 +44,10 @@ public class ApplicationService {
     private ATSApplicationService atsApplicationService;
 
     @Autowired
-    private  NotificationService notificationService;
+    private EmailNotificationService emailNotificationService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public ApplicationResponse applyForJob(Long jobId, ApplicationRequest request, String candidateEmail) {
         User candidate = userRepository.findByEmail(candidateEmail)
@@ -87,8 +89,10 @@ public class ApplicationService {
                     });
         }
 
+        Application saved = applicationRepository.save(application);
+
         try {
-            notificationService.sendApplicationConfirmation(
+            emailNotificationService.sendApplicationConfirmation(
                     candidate.getEmail(),
                     candidate.getUsername() != null ? candidate.getUsername() : candidate.getEmail(),
                     job.getTitle(),
@@ -97,7 +101,21 @@ public class ApplicationService {
         } catch (Exception e) {
             log.warn("Application confirmation email failed for {}: {}", candidate.getEmail(), e.getMessage());
         }
-        return new ApplicationResponse(applicationRepository.save(application));
+
+        // Notifications
+        try {
+            notificationService.notifyApplicationSubmitted(
+                    candidate,
+                    job.getCreatedBy(),   // recruiter
+                    job.getTitle(),
+                    job.getId(),
+                    saved.getId()
+            );
+        } catch (Exception e) {
+            log.warn("Notification failed: {}", e.getMessage());
+        }
+
+        return new ApplicationResponse(saved);
     }
 
     public List<ApplicationResponse> getMyApplications(String candidateEmail) {
@@ -144,7 +162,7 @@ public class ApplicationService {
         try {
             User candidate = saved.getCandidate();
             Job job = saved.getJob();
-            notificationService.sendStatusUpdateNotification(
+            emailNotificationService.sendStatusUpdateNotification(
                     candidate.getEmail(),
                     candidate.getUsername() != null ? candidate.getUsername() : candidate.getEmail(),
                     job.getTitle(),
@@ -153,6 +171,17 @@ public class ApplicationService {
             );
         } catch (Exception e) {
             log.warn("Status email failed for application {}: {}", applicationId, e.getMessage());
+        }
+        // Notification
+        try {
+            notificationService.notifyStatusUpdate(
+                    saved.getCandidate(),
+                    saved.getJob().getTitle(),
+                    saved.getStatus(),
+                    saved.getJob().getId()
+            );
+        } catch (Exception e) {
+            log.warn("Notification failed: {}", e.getMessage());
         }
         return new ApplicationResponse(applicationRepository.save(application));
     }
@@ -167,7 +196,16 @@ public class ApplicationService {
         if (!application.getCandidate().getId().equals(candidate.getId())) {
             throw new RuntimeException("You are not authorized to withdraw this application");
         }
-
+        try {
+            notificationService.notifyApplicationWithdrawn(
+                    application.getJob().getCreatedBy(),
+                    candidate.getUsername(),
+                    application.getJob().getTitle(),
+                    application.getJob().getId()
+            );
+        } catch (Exception e) {
+            log.warn("Notification failed: {}", e.getMessage());
+        }
         applicationRepository.delete(application);
     }
 

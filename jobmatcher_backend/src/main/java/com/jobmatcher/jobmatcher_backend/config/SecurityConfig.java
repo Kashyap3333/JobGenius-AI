@@ -73,6 +73,9 @@ public class SecurityConfig {
                         // Applications — role enforcement handled by @PreAuthorize on controller
                         .requestMatchers("/applications/**").authenticated()
 
+                        // Notifications
+                        .requestMatchers("/notifications/**").authenticated()
+
                         // Resume — upload/delete restricted to CANDIDATE via @PreAuthorize
                         .requestMatchers("/resume/**").authenticated()
                         // Serve uploaded files publicly (direct link access)

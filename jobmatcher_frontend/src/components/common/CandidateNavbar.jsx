@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import logo from "../../assets/Images/Horizontal_NOBG_Logo.png";
 import API from "../../services/api";
+import NotificationBell from "./NotificationBell";
 
 export default function CandidateNavbar() {
   const navigate = useNavigate();
@@ -97,7 +98,9 @@ export default function CandidateNavbar() {
             <span className="text-xs font-medium text-gray-600">Menu</span>
           </button>
 
-          {/* ── User Dropdown ── */}
+          {/* ── Notification Bell + User Dropdown ── */}
+          <div className="flex items-center gap-2">
+          <NotificationBell />
           <div className="relative shrink-0 lg:pr-5">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -157,6 +160,7 @@ export default function CandidateNavbar() {
                 </div>
               </>
             )}
+          </div>
           </div>
         </div>
       </div>

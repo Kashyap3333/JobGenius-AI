@@ -29,7 +29,7 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private  NotificationService notificationService;
+    private EmailNotificationService emailNotificationService;
 
     public User register(User user) {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
@@ -41,7 +41,7 @@ public class AuthService {
         User savedUser = userRepository.save(user); // ← save first
 
         try {
-            notificationService.sendWelcomeEmail(
+            emailNotificationService.sendWelcomeEmail(
                     savedUser.getEmail(),
                     savedUser.getUsername() != null ? savedUser.getUsername() : savedUser.getEmail()
             );
