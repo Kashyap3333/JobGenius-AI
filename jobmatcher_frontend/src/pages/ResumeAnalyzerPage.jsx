@@ -740,7 +740,7 @@ export default function ResumeAnalyzerPage() {
                     personalized career recommendations — all in seconds.
                   </p>
                 </div>
-                <div className="flex gap-3 shrink-0">
+                <div className="flex flex-wrap gap-3">
                   {[
                     {
                       label: "Resumes",
@@ -1153,7 +1153,7 @@ export default function ResumeAnalyzerPage() {
                 </div>
 
                 {/* Job Selection */}
-                <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden flex flex-col h-[620px]">
+                <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden flex flex-col h-[480px] sm:h-[540px] lg:h-[620px]">
                   {" "}
                   <div className="px-6 pt-5 pb-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">

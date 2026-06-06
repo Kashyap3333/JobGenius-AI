@@ -64,17 +64,17 @@ export default function CandidateNavbar() {
           </Link>
 
           {/* ── Desktop Nav Links ── */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-3">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-3">
             {navLinks.map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
-                className={`relative flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                className={`relative flex items-center gap-2 px-2 xl:px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
                   hover:text-blue-600 hover:bg-gray-100
                   ${isActive(to) ? "text-blue-600" : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"}`}
               >
-                <Icon size={16} className="hidden sm:block" />
-                <span className="text-xs lg:text-sm font-semibold">
+                <Icon size={16} className="hidden xl:block" />
+                <span className="text-xs xl:text-sm font-semibold">
                   {label}
                 </span>
 
@@ -89,7 +89,7 @@ export default function CandidateNavbar() {
           {/* ── Mobile hamburger ── */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5
               rounded-full border border-gray-200 bg-white shadow-sm
               hover:bg-gray-50 hover:shadow-md active:scale-[0.96]
               transition-all duration-200"
@@ -167,7 +167,7 @@ export default function CandidateNavbar() {
 
       {/* ── Mobile Menu ── */}
       {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 px-4 py-1 shadow-sm">
+        <div className="lg:hidden bg-white border-t border-gray-200 px-4 py-1 shadow-sm">
           <div className="space-y-2">
             {navLinks.map(({ to, label, icon: Icon }) => (
               <Link

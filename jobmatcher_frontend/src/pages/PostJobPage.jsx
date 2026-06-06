@@ -138,7 +138,7 @@ const EMPTY_FORM = {
   jobType: "",
   workMode: "",
   salary: "",
-  experienceRequired: "",  // "" = not set, number = years
+  experienceRequired: "",
   lastDateToApply: "",
   description: "",
 };
@@ -179,8 +179,19 @@ export default function PostJobPage({
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
+  const [experienceOpen, setExperienceOpen] = useState(false);
+  const experienceRef = useRef(null);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
+
+  const experienceOptions = [
+    { value: "0", label: "Fresher (0 years)" },
+    { value: "1", label: "1 Year" },
+    { value: "2", label: "2 Years" },
+    { value: "3", label: "3 Years" },
+    { value: "4", label: "4 Years" },
+    { value: "5", label: "5+ Years" },
+  ];
 
   // ── Prefill form when initialData arrives (edit mode) ───────
   useEffect(() => {
@@ -216,11 +227,17 @@ export default function PostJobPage({
   // ── Close skill dropdown on outside click ───────────────────
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target))
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
+      }
+      if (experienceRef.current && !experienceRef.current.contains(e.target)) {
+        setExperienceOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
   }, []);
 
   // ── Field change handler ─────────────────────────────────────
@@ -273,7 +290,8 @@ export default function PostJobPage({
     const payload = {
       ...form,
       salary: Number(form.salary),
-      experienceRequired: form.experienceRequired !== "" ? Number(form.experienceRequired) : null,
+      experienceRequired:
+        form.experienceRequired !== "" ? Number(form.experienceRequired) : null,
       skillIds: selectedSkills.map((s) => s.id),
     };
 
@@ -399,7 +417,7 @@ export default function PostJobPage({
           {/* Salary */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">
-              Salary (₹) <span className="text-red-500">*</span>
+              Salary (₹/month) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -419,27 +437,63 @@ export default function PostJobPage({
         {/* Row 3: Experience + Last Date */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-5">
           {/* Experience Required */}
-          <div className="flex flex-col gap-1.5">
+          <div ref={experienceRef} className="flex flex-col gap-1.5 relative">
             <label className="text-sm font-medium text-gray-700">
               Experience Required
             </label>
-            <select
-              name="experienceRequired"
-              value={form.experienceRequired}
-              onChange={handleChange}
-              className={`border rounded-xl px-4 py-2.5 text-sm bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all appearance-none cursor-pointer
-                ${errors.experienceRequired ? "border-red-400" : "border-gray-200"}`}
+
+            <div
+              onClick={() => setExperienceOpen(!experienceOpen)}
+              className={`w-full flex items-center justify-between border rounded-xl px-4 py-2.5 text-sm bg-white cursor-pointer transition-all
+      ${
+        experienceOpen
+          ? "border-blue-500 ring-2 ring-blue-100"
+          : "border-gray-200 hover:border-gray-300"
+      }`}
             >
-              <option value="">Select experience level</option>
-              <option value="0">Fresher (0 years)</option>
-              <option value="1">1 Year</option>
-              <option value="2">2 Years</option>
-              <option value="3">3 Years</option>
-              <option value="4">4 Years</option>
-              <option value="5">5+ Years</option>
-            </select>
-            {errors.experienceRequired && (
-              <p className="text-red-500 text-xs mt-0.5">{errors.experienceRequired}</p>
+              <span
+                className={
+                  form.experienceRequired ? "text-gray-800" : "text-gray-400"
+                }
+              >
+                {experienceOptions.find(
+                  (e) => e.value === String(form.experienceRequired),
+                )?.label || "Select experience level"}
+              </span>
+
+              <ChevronDown
+                size={16}
+                className={`text-gray-400 transition-transform ${
+                  experienceOpen ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+
+            {experienceOpen && (
+              <div className="absolute top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                {experienceOptions.map((exp) => (
+                  <div
+                    key={exp.value}
+                    onClick={() => {
+                      handleChange({
+                        target: {
+                          name: "experienceRequired",
+                          value: exp.value,
+                        },
+                      });
+                      setExperienceOpen(false);
+                    }}
+                    className={`px-4 py-2.5 text-sm cursor-pointer transition-all
+            ${
+              String(form.experienceRequired) === exp.value
+                ? "bg-blue-50 text-blue-600 font-medium"
+                : "hover:bg-gray-50 text-gray-700"
+            }`}
+                  >
+                    {exp.label}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -494,7 +548,7 @@ export default function PostJobPage({
                 key={title}
                 title={title}
                 type="button"
-                className="p-1.5 rounded hover:bg-gray-200 text-gray-500 transition-colors"
+                className="p-1.5 rounded hover:bg-gray-200 text-gray-500 transition-colors cursor-pointer"
               >
                 <Icon size={15} />
               </button>
@@ -540,6 +594,7 @@ export default function PostJobPage({
                       e.stopPropagation();
                       removeSkill(skill);
                     }}
+                    className="cursor-pointer"
                   >
                     <X
                       size={11}
@@ -585,7 +640,10 @@ export default function PostJobPage({
                     autoFocus
                   />
                   {skillSearch && (
-                    <button onClick={() => setSkillSearch("")}>
+                    <button
+                      onClick={() => setSkillSearch("")}
+                      className="cursor-pointer"
+                    >
                       <X
                         size={13}
                         className="text-gray-400 hover:text-gray-600"
@@ -645,7 +703,11 @@ export default function PostJobPage({
                     className="flex items-center gap-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-medium px-2.5 py-1.5 rounded-full shadow-sm"
                   >
                     {skill.name}
-                    <button type="button" onClick={() => removeSkill(skill)}>
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="cursor-pointer"
+                    >
                       <X
                         size={11}
                         className="hover:text-red-500 transition-colors"
@@ -663,7 +725,7 @@ export default function PostJobPage({
           <button
             type="button"
             onClick={() => navigate("/recruiter-dashboard")}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 hover:bg-gray-50 transition-all cursor-pointer"
           >
             Cancel
           </button>

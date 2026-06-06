@@ -349,6 +349,15 @@ function SkillChip({ name }) {
   );
 }
 
+function MetaItem({ icon: Icon, children }) {
+  return (
+    <span className="flex items-center gap-1">
+      <Icon size={10} />
+      {children}
+    </span>
+  );
+}
+
 function QuickLinkCard({ icon: Icon, color, title, subtitle, onClick }) {
   return (
     <button
@@ -601,6 +610,149 @@ const MOCK_APPLICATIONS = [
     time: "2d ago",
   },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Right Sidebar Components
+// ─────────────────────────────────────────────────────────────────────────────
+
+function InsightStat({ icon: Icon, value, label, color }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-50">
+        <Icon size={13} style={{ color }} />
+      </div>
+      <span className="text-sm font-bold text-gray-900">{value}</span>
+      <span className="text-[10px] text-gray-400 leading-tight text-center">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function ApplicationRow({ app }) {
+  return (
+    <div className="flex items-start justify-between gap-2">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-gray-900 truncate">
+          {app.title}
+        </p>
+        <p className="text-xs text-gray-400 mt-0.5">{app.company}</p>
+      </div>
+      <div className="flex flex-col items-end gap-0.5 shrink-0">
+        <AppStatusBadge status={app.status} />
+        <span className="text-[10px] text-gray-400">{app.time}</span>
+      </div>
+    </div>
+  );
+}
+
+function ProfileCard({ firstName, navigate }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-11 h-11 rounded-full bg-linear-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+          {firstName[0]?.toUpperCase()}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-gray-900 truncate">
+            Hi, {firstName} 👋
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">Profile completeness</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-600 rounded-full"
+            style={{ width: "80%" }}
+          />
+        </div>
+        <span className="text-xs font-bold text-gray-700">80%</span>
+      </div>
+      <button
+        onClick={() => navigate("/profile")}
+        className="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+      >
+        Improve your profile <ArrowRight size={11} />
+      </button>
+    </div>
+  );
+}
+
+function QuickLinksCard({ navigate }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-col gap-1.5">
+      <QuickLinkCard
+        icon={Star}
+        color={{ bg: "#FFF7ED", icon: "#F97316" }}
+        title="Skill Management"
+        subtitle="Add, remove or update your skills"
+        onClick={() => navigate("/skill-management")}
+      />
+      <QuickLinkCard
+        icon={TrendingUp}
+        color={{ bg: "#F0FDF4", icon: "#16A34A" }}
+        title="Skill Gap"
+        subtitle="Find missing skills and get suggestions"
+        onClick={() => navigate("/skill-gap")}
+      />
+      <QuickLinkCard
+        icon={Bookmark}
+        color={{ bg: "#EFF6FF", icon: "#2563EB" }}
+        title="Saved / Applied Jobs"
+        subtitle="Track your saved and applied jobs"
+        onClick={() => navigate("/my-applications")}
+      />
+    </div>
+  );
+}
+
+function MyApplicationsCard({ navigate }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-bold text-gray-900">My Applications</p>
+        <button
+          onClick={() => navigate("/my-applications")}
+          className="text-xs text-blue-600 hover:underline font-medium cursor-pointer"
+        >
+          View all
+        </button>
+      </div>
+      <div className="flex flex-col gap-2.5">
+        {MOCK_APPLICATIONS.map((app, i) => (
+          <ApplicationRow key={i} app={app} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InsightsCard() {
+  const stats = [
+    { icon: PhoneCall, value: "12", label: "Applications", color: "#3B82F6" },
+    { icon: Eye, value: "156", label: "Profile Views", color: "#8B5CF6" },
+    {
+      icon: TrendingUp,
+      value: "8",
+      label: "Interview Calls",
+      color: "#10B981",
+    },
+  ];
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-bold text-gray-900">JobGenius Insights</p>
+        <span className="text-xs text-gray-400">This week</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        {stats.map((s) => (
+          <InsightStat key={s.label} {...s} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Page
@@ -1178,144 +1330,10 @@ export default function JobListingPage() {
 
           {/* Right sidebar */}
           <aside className="hidden xl:flex flex-col gap-4 w-60 2xl:w-64 shrink-0">
-            {/* Profile */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
-                  {firstName[0]?.toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-gray-900 truncate">
-                    Hi, {firstName} 👋
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Profile completeness
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 rounded-full"
-                    style={{ width: "80%" }}
-                  />
-                </div>
-                <span className="text-xs font-bold text-gray-700">80%</span>
-              </div>
-              <button
-                onClick={() => navigate("/profile")}
-                className="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
-              >
-                Improve your profile <ArrowRight size={11} />
-              </button>
-            </div>
-
-            {/* Quick links */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-col gap-1.5">
-              <QuickLinkCard
-                icon={Star}
-                color={{ bg: "#FFF7ED", icon: "#F97316" }}
-                title="Skill Management"
-                subtitle="Add, remove or update your skills"
-                onClick={() => navigate("/skill-management")}
-              />
-              <QuickLinkCard
-                icon={TrendingUp}
-                color={{ bg: "#F0FDF4", icon: "#16A34A" }}
-                title="Skill Gap"
-                subtitle="Find missing skills and get suggestions"
-                onClick={() => navigate("/skill-gap")}
-              />
-              <QuickLinkCard
-                icon={Bookmark}
-                color={{ bg: "#EFF6FF", icon: "#2563EB" }}
-                title="Saved / Applied Jobs"
-                subtitle="Track your saved and applied jobs"
-                onClick={() => navigate("/my-applications")}
-              />
-            </div>
-
-            {/* My Applications */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-bold text-gray-900">
-                  My Applications
-                </p>
-                <button
-                  onClick={() => navigate("/my-applications")}
-                  className="text-xs text-blue-600 hover:underline font-medium cursor-pointer"
-                >
-                  View all
-                </button>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {MOCK_APPLICATIONS.map((app, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 truncate">
-                        {app.title}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {app.company}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-0.5 shrink-0">
-                      <AppStatusBadge status={app.status} />
-                      <span className="text-[10px] text-gray-400">
-                        {app.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Insights */}
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-bold text-gray-900">
-                  JobGenius Insights
-                </p>
-                <span className="text-xs text-gray-400">This week</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                {[
-                  {
-                    icon: PhoneCall,
-                    value: "12",
-                    label: "Applications",
-                    color: "#3B82F6",
-                  },
-                  {
-                    icon: Eye,
-                    value: "156",
-                    label: "Profile Views",
-                    color: "#8B5CF6",
-                  },
-                  {
-                    icon: TrendingUp,
-                    value: "8",
-                    label: "Interview Calls",
-                    color: "#10B981",
-                  },
-                ].map(({ icon: Icon, value, label, color }) => (
-                  <div key={label} className="flex flex-col items-center gap-1">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-gray-50">
-                      <Icon size={13} style={{ color }} />
-                    </div>
-                    <span className="text-sm font-bold text-gray-900">
-                      {value}
-                    </span>
-                    <span className="text-[10px] text-gray-400 leading-tight text-center">
-                      {label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ProfileCard firstName={firstName} navigate={navigate} />
+            <QuickLinksCard navigate={navigate} />
+            <MyApplicationsCard navigate={navigate} />
+            <InsightsCard />
           </aside>
         </div>
       </div>

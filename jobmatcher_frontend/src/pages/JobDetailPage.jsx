@@ -830,7 +830,8 @@ export default function JobDetailPage() {
                     )}
                     {job.experienceRequired != null && (
                       <span className="flex items-center gap-1 text-sm text-gray-500">
-                        <Users size={13} /> {fmtExp(job.experienceRequired)} Experience
+                        <Users size={13} /> {fmtExp(job.experienceRequired)}{" "}
+                        Experience
                       </span>
                     )}
                   </div>
@@ -900,14 +901,14 @@ export default function JobDetailPage() {
                   ) : (
                     <button
                       onClick={() => setShowApplyModal(true)}
-                      className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-700 active:scale-[0.97] transition-all shadow-sm shadow-green-200"
+                      className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-700 active:scale-[0.97] transition-all shadow-sm shadow-green-200 cursor-pointer"
                     >
                       <Send size={14} /> Apply Now
                     </button>
                   )}
                   <button
                     onClick={handleToggleSave}
-                    className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all
+                    className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all cursor-pointer
                       ${saved ? "bg-blue-50 text-blue-600 border-blue-200" : "bg-white text-gray-700 border-gray-200 hover:border-gray-300 hover:bg-gray-50"}`}
                   >
                     {saved ? (

@@ -71,10 +71,10 @@ export default function RecruiterNavbar() {
           </div>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden flex items-center gap-1.5 px-3 py-1.5 
+            className="md:hidden flex items-center gap-1.5 px-3 py-1.5
               rounded-full border border-gray-200 bg-white shadow-sm
               hover:bg-gray-50 hover:shadow-md active:scale-[0.96]
-              transition-all duration-200"
+              transition-all duration-200 cursor-pointer"
           >
             {/* Icon */}
             <span className="text-lg leading-none">☰</span>
@@ -89,7 +89,7 @@ export default function RecruiterNavbar() {
           <div className="relative shrink-0 lg:pr-5">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 h-9 px-2.5 rounded-lg flex items-center hover:bg-gray-50 border border-gray-200 transition-colors"
+              className="flex items-center gap-2 h-9 px-2.5 rounded-lg flex items-center hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer"
             >
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                 {initial}
@@ -130,7 +130,7 @@ export default function RecruiterNavbar() {
                   <div className="border-t border-gray-100 my-1" />
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                   >
                     <LogOut size={15} /> Logout
                   </button>

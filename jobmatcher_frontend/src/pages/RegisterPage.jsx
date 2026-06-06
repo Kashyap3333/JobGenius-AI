@@ -108,7 +108,7 @@ export default function Register() {
         >
           {/* ════════════════ LEFT PANEL ════════════════ */}
           <div
-            className="lg:w-[42%] relative overflow-hidden flex flex-col p-8 lg:p-10"
+            className="hidden lg:flex lg:w-[42%] relative overflow-hidden flex-col p-8 lg:p-10"
             style={{
               background:
                 "linear-gradient(145deg, #1d4ed8 0%, #2563eb 45%, #3b82f6 100%)",

@@ -314,7 +314,7 @@ function ATSModal({ applicant, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all"
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all cursor-pointer"
           >
             <X size={15} className="text-gray-400" />
           </button>
@@ -422,7 +422,7 @@ function ATSModal({ applicant, onClose }) {
         <div className="px-6 pb-5">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all"
+            className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all cursor-pointer"
           >
             Close
           </button>
@@ -549,7 +549,7 @@ function ActionMenu({ app, onViewATS, onShortlist, updatingId }) {
         ref={btnRef}
         onClick={open ? () => setOpen(false) : openMenu}
         className="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center
-          hover:bg-gray-50 hover:border-gray-300 transition-all"
+          hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer"
       >
         <MoreHorizontal size={15} className="text-gray-500" />
       </button>
@@ -581,7 +581,7 @@ function ActionMenu({ app, onViewATS, onShortlist, updatingId }) {
                 setOpen(false);
               }}
               className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-blue-600
-              hover:bg-blue-50 transition-all text-left"
+              hover:bg-blue-50 transition-all text-left cursor-pointer"
             >
               <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
                 <BarChart3 size={13} className="text-blue-600" />
@@ -616,7 +616,7 @@ function ActionMenu({ app, onViewATS, onShortlist, updatingId }) {
                   setOpen(false);
                 }}
                 disabled={updating}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-50 transition-all text-left disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-50 transition-all text-left disabled:opacity-50 cursor-pointer"
               >
                 <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
                   {updating ? (
@@ -775,7 +775,7 @@ export default function JobApplicantsPage() {
         <div className="flex items-start gap-3">
           <button
             onClick={() => navigate("/manage-jobs")}
-            className="mt-0.5 p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 transition-all shrink-0"
+            className="mt-0.5 p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 transition-all shrink-0 cursor-pointer"
           >
             <ArrowLeft size={16} />
           </button>
@@ -855,7 +855,7 @@ export default function JobApplicantsPage() {
                 <button
                   key={value}
                   onClick={() => setSortBy(value)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer
                     ${
                       sortBy === value
                         ? "bg-blue-600 text-white shadow-sm"
@@ -877,7 +877,7 @@ export default function JobApplicantsPage() {
           <span className="flex-1">{updateError}</span>
           <button
             onClick={() => setUpdateError("")}
-            className="p-0.5 hover:bg-red-100 rounded-lg transition-colors shrink-0"
+            className="p-0.5 hover:bg-red-100 rounded-lg transition-colors shrink-0 cursor-pointer"
           >
             <X size={14} />
           </button>
@@ -897,7 +897,7 @@ export default function JobApplicantsPage() {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="text-sm text-blue-600 hover:underline font-medium"
+            className="text-sm text-blue-600 hover:underline font-medium cursor-pointer"
           >
             Try again
           </button>

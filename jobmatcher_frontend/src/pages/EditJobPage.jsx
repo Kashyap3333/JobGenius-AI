@@ -77,7 +77,7 @@ export default function EditJobPage() {
         </div>
         <button
           onClick={() => navigate("/recruiter-dashboard")}
-          className="text-sm text-blue-600 hover:underline font-medium"
+          className="text-sm text-blue-600 hover:underline font-medium cursor-pointer"
         >
           ← Back to Dashboard
         </button>

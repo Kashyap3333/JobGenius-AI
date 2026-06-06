@@ -48,7 +48,10 @@ function RowsPerPage({ value, onChange }) {
           {options.map((o) => (
             <div
               key={o}
-              onClick={() => { onChange(o); setOpen(false); }}
+              onClick={() => {
+                onChange(o);
+                setOpen(false);
+              }}
               className={`px-4 py-2 text-sm cursor-pointer ${value === o ? "bg-blue-50 text-blue-600 font-medium" : "hover:bg-gray-50 text-gray-700"}`}
             >
               {o}
@@ -216,9 +219,13 @@ export default function RecruiterDashboard() {
   const activeJobs = jobs.filter(
     (j) => (j.status || "ACTIVE").toUpperCase() === "ACTIVE",
   ).length;
-  const totalApplications = jobs.reduce((s, j) => s + (j.applicationCount || 0), 0);
+  const totalApplications = jobs.reduce(
+    (s, j) => s + (j.applicationCount || 0),
+    0,
+  );
 
-  const isExpired = (d) => d && new Date(d) < new Date(new Date().toDateString());
+  const isExpired = (d) =>
+    d && new Date(d) < new Date(new Date().toDateString());
 
   const filteredJobs = jobs.filter((j) => {
     if (isExpired(j.lastDateToApply)) return false;
@@ -232,7 +239,10 @@ export default function RecruiterDashboard() {
 
   const totalPages = Math.max(1, Math.ceil(filteredJobs.length / rowsPerPage));
   const safeP = Math.min(page, totalPages);
-  const pagedJobs = filteredJobs.slice((safeP - 1) * rowsPerPage, safeP * rowsPerPage);
+  const pagedJobs = filteredJobs.slice(
+    (safeP - 1) * rowsPerPage,
+    safeP * rowsPerPage,
+  );
 
   const handleSearch = (val) => {
     setSearchQuery(val);
@@ -250,12 +260,12 @@ export default function RecruiterDashboard() {
 
   return (
     <div className="w-full overflow-x-hidden">
-      <div className="scale-[0.8] origin-top-left w-[125%] px-4 sm:px-6 lg:px-10 xl:px-16 py-6 sm:py-8">
+      <div className="px-4 sm:px-6 lg:px-10 xl:px-16 py-6 sm:py-8">
         {/* ── Welcome + Date ── */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Welcome back, {firstName}! 👋
+              Welcome back, {firstName}! 👋why
             </h1>
             <p className="text-gray-500 text-sm sm:text-base mt-1">
               Here's what's happening with your job postings.
@@ -342,7 +352,7 @@ export default function RecruiterDashboard() {
           )}
 
           <div className="overflow-x-auto w-full">
-            <table className="w-full">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   {[
@@ -500,7 +510,10 @@ export default function RecruiterDashboard() {
                   <ChevronLeft size={14} />
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - safeP) <= 1)
+                  .filter(
+                    (p) =>
+                      p === 1 || p === totalPages || Math.abs(p - safeP) <= 1,
+                  )
                   .reduce((acc, p, idx, arr) => {
                     if (idx > 0 && arr[idx - 1] !== p - 1) acc.push("...");
                     acc.push(p);
@@ -508,7 +521,12 @@ export default function RecruiterDashboard() {
                   }, [])
                   .map((p, i) =>
                     p === "..." ? (
-                      <span key={`e-${i}`} className="px-2 text-gray-400 text-sm">…</span>
+                      <span
+                        key={`e-${i}`}
+                        className="px-2 text-gray-400 text-sm"
+                      >
+                        …
+                      </span>
                     ) : (
                       <button
                         key={p}
@@ -517,7 +535,7 @@ export default function RecruiterDashboard() {
                       >
                         {p}
                       </button>
-                    )
+                    ),
                   )}
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -531,7 +549,10 @@ export default function RecruiterDashboard() {
                 Rows per page
                 <RowsPerPage
                   value={rowsPerPage}
-                  onChange={(v) => { setRowsPerPage(v); setPage(1); }}
+                  onChange={(v) => {
+                    setRowsPerPage(v);
+                    setPage(1);
+                  }}
                 />
               </div>
             </div>
