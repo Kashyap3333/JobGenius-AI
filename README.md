@@ -473,49 +473,6 @@ job_skills
 applications
 resumes
 
-## System Architecture
-
-Frontend (React) → REST APIs → Spring Boot Backend → PostgreSQL Database
-
-# Environment Variables
-
-## Frontend `.env`
-
-```env
-VITE_API_BASE_URL=http://localhost:8080
-```
-
-## Backend `application.properties`
-
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/job_matcher_db
-spring.datasource.username=postgres
-spring.datasource.password=your_password
-
-jwt.secret=your_jwt_secret
-
-# Email (SMTP — e.g. Gmail)
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
-spring.mail.properties.mail.smtp.auth=true
-spring.mail.properties.mail.smtp.starttls.enable=true
-
-# Frontend URL — embedded in notification emails
-app.frontend.url=http://localhost:5173
-
-# NVIDIA NIM — AI Resume Analyzer & Career Insights
-nvidia.nim.api.key=your_nvidia_nim_api_key
-nvidia.nim.api.url=https://integrate.api.nvidia.com/v1/chat/completions
-nvidia.nim.model=meta/llama-3.1-8b-instruct
-
-# ATS score weights (must sum to 100)
-ats.weight.skills=60
-ats.weight.experience=20
-ats.weight.projects=10
-ats.weight.strength=10
-```
 
 ## Matching Formula
 
